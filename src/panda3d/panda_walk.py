@@ -6,7 +6,9 @@ from direct.actor.Actor import Actor
 from direct.interval.IntervalGlobal import Sequence
 from panda3d.core import Point3
 
-
+"""
+Shows a panda walking in a glade. And the camera spins around it.
+"""
 class MyApp(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
