@@ -1,4 +1,5 @@
 from direct.showbase.ShowBase import ShowBase
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import CollisionTraverser, CollisionNode
 from panda3d.core import CollisionHandlerQueue, CollisionRay
 from panda3d.core import Material, LRotationf, NodePath
@@ -12,83 +13,46 @@ from direct.interval.FunctionInterval import Func, Wait
 from direct.task.Task import Task
 import sys
 
-# Some constants for the program
-ACCEL = 70         # Acceleration in ft/sec/sec
-MAX_SPEED = 5      # Max speed in ft/sec
-MAX_SPEED_SQ = MAX_SPEED ** 2  # Squared to make it easier to use lengthSquared
-# Instead of length
+# Constants
+ACCELERATION = 70  # Acceleration in feet per second^2
+MAX_SPEED = 5  # Max speed in feet per second
 
 
 class BallInMazeDemo(ShowBase):
 
     def __init__(self):
-        # Initialize the ShowBase class from which we inherit, which will
-        # create a window and set up everything we need for rendering into it.
+        # Initialize the ShowBase class
         ShowBase.__init__(self)
 
-        # This code puts the standard title and instruction text on screen
-        self.title = \
-            OnscreenText(text="Panda3D: Tutorial - Collision Detection",
-                         parent=base.a2dBottomRight, align=TextNode.ARight,
-                         fg=(1, 1, 1, 1), pos=(-0.1, 0.1), scale=.08,
-                         shadow=(0, 0, 0, 0.5))
-        self.instructions = \
-            OnscreenText(text="Mouse pointer tilts the board",
-                         parent=base.a2dTopLeft, align=TextNode.ALeft,
-                         pos=(0.05, -0.08), fg=(1, 1, 1, 1), scale=.06,
-                         shadow=(0, 0, 0, 0.5))
+        self.title = OnscreenText(
+            text="Panda3D: Tutorial - Collision Detection",
+            parent=base.a2dBottomRight, align=TextNode.ARight,
+            fg=(1, 1, 1, 1), pos=(-0.1, 0.1), scale=.08,
+            shadow=(0, 0, 0, 0.5)
+        )
+        self.instructions = OnscreenText(
+            text="Mouse pointer tilts the board",
+            parent=base.a2dTopLeft, align=TextNode.ALeft,
+            pos=(0.05, -0.08), fg=(1, 1, 1, 1), scale=.06,
+            shadow=(0, 0, 0, 0.5)
+        )
 
-        self.accept("escape", sys.exit)  # Escape quits
+        self.accept("escape", sys.exit)  # Escape key quits the game
 
-        # Disable default mouse-based camera control.  This is a method on the
-        # ShowBase class from which we inherit.
-        self.disableMouse()
-        camera.setPosHpr(0, 0, 25, 0, -90, 0)  # Place the camera
+        self.disableMouse()  # Disable default mouse-based camera control.
+        camera.setPosHpr(0, 0, 25, 0, -90, 0)  # Position of the camera
 
-        # Load the maze and place it in the scene
+        # Load the maze
         self.maze = loader.loadModel("models/maze")
         self.maze.reparentTo(render)
 
-        # Most times, you want collisions to be tested against invisible geometry
-        # rather than every polygon. This is because testing against every polygon
-        # in the scene is usually too slow. You can have simplified or approximate
-        # geometry for the solids and still get good results.
-        #
-        # Sometimes you'll want to create and position your own collision solids in
-        # code, but it's often easier to have them built automatically. This can be
-        # done by adding special tags into an egg file. Check maze.egg and ball.egg
-        # and look for lines starting with <Collide>. The part is brackets tells
-        # Panda exactly what to do. Polyset means to use the polygons in that group
-        # as solids, while Sphere tells panda to make a collision sphere around them
-        # Keep means to keep the polygons in the group as visable geometry (good
-        # for the ball, not for the triggers), and descend means to make sure that
-        # the settings are applied to any subgroups.
-        #
-        # Once we have the collision tags in the models, we can get to them using
-        # NodePath's find command
+        self.walls = self.maze.find("**/wall_collide")  # the collision node for walls
 
-        # Find the collision node named wall_collide
-        self.walls = self.maze.find("**/wall_collide")
+        self.walls.node().setIntoCollideMask(BitMask32.bit(0))  # Walls collide with the ball
+        #  Uncomment the next line to see the collision walls
+        # self.walls.show()
 
-        # Collision objects are sorted using BitMasks. BitMasks are ordinary numbers
-        # with extra methods for working with them as binary bits. Every collision
-        # solid has both a from mask and an into mask. Before Panda tests two
-        # objects, it checks to make sure that the from and into collision masks
-        # have at least one bit in common. That way things that shouldn't interact
-        # won't. Normal model nodes have collision masks as well. By default they
-        # are set to bit 20. If you want to collide against actual visable polygons,
-        # set a from collide mask to include bit 20
-        #
-        # For this example, we will make everything we want the ball to collide with
-        # include bit 0
-        self.walls.node().setIntoCollideMask(BitMask32.bit(0))
-        # CollisionNodes are usually invisible but can be shown. Uncomment the next
-        # line to see the collision walls
-        #self.walls.show()
-
-        # We will now find the triggers for the holes and set their masks to 0 as
-        # well. We also set their names to make them easier to identify during
-        # collisions
+        # Define 6 holes in the maze
         self.loseTriggers = []
         for i in range(6):
             trigger = self.maze.find("**/hole_collide" + str(i))
@@ -98,80 +62,49 @@ class BallInMazeDemo(ShowBase):
             # Uncomment this line to see the triggers
             # trigger.show()
 
-        # Ground_collide is a single polygon on the same plane as the ground in the
-        # maze. We will use a ray to collide with it so that we will know exactly
-        # what height to put the ball at every frame. Since this is not something
-        # that we want the ball itself to collide with, it has a different
-        # bitmask.
+        # The ground doesn't collide with the ball
         self.mazeGround = self.maze.find("**/ground_collide")
         self.mazeGround.node().setIntoCollideMask(BitMask32.bit(1))
 
-        # Load the ball and attach it to the scene
-        # It is on a root dummy node so that we can rotate the ball itself without
-        # rotating the ray that will be attached to it
+        # Load the ball
         self.ballRoot = render.attachNewNode("ballRoot")
         self.ball = loader.loadModel("models/ball")
         self.ball.reparentTo(self.ballRoot)
 
-        # Find the collison sphere for the ball which was created in the egg file
-        # Notice that it has a from collision mask of bit 0, and an into collison
-        # mask of no bits. This means that the ball can only cause collisions, not
-        # be collided into
+        # The collision sphere for the ball
         self.ballSphere = self.ball.find("**/ball")
         self.ballSphere.node().setFromCollideMask(BitMask32.bit(0))
         self.ballSphere.node().setIntoCollideMask(BitMask32.allOff())
 
-        # No we create a ray to start above the ball and cast down. This is to
-        # Determine the height the ball should be at and the angle the floor is
-        # tilting. We could have used the sphere around the ball itself, but it
-        # would not be as reliable
-        self.ballGroundRay = CollisionRay()     # Create the ray
-        self.ballGroundRay.setOrigin(0, 0, 10)    # Set its origin
+        # The ray that starts from above the ball and towards the ground (in order to understand the tilting of the ground)
+        self.ballGroundRay = CollisionRay()  # Create the ray
+        self.ballGroundRay.setOrigin(0, 0, 10)  # Set its origin
         self.ballGroundRay.setDirection(0, 0, -1)  # And its direction
-        # Collision solids go in CollisionNode
-        # Create and name the node
+
         self.ballGroundCol = CollisionNode('groundRay')
         self.ballGroundCol.addSolid(self.ballGroundRay)  # Add the ray
-        self.ballGroundCol.setFromCollideMask(
-            BitMask32.bit(1))  # Set its bitmasks
+        self.ballGroundCol.setFromCollideMask(BitMask32.bit(1))
         self.ballGroundCol.setIntoCollideMask(BitMask32.allOff())
-        # Attach the node to the ballRoot so that the ray is relative to the ball
-        # (it will always be 10 feet over the ball and point down)
+
         self.ballGroundColNp = self.ballRoot.attachNewNode(self.ballGroundCol)
         # Uncomment this line to see the ray
-        #self.ballGroundColNp.show()
+        # self.ballGroundColNp.show()
 
-        # Finally, we create a CollisionTraverser. CollisionTraversers are what
-        # do the job of walking the scene graph and calculating collisions.
-        # For a traverser to actually do collisions, you need to call
-        # traverser.traverse() on a part of the scene. Fortunately, ShowBase
-        # has a task that does this for the entire scene once a frame.  By
-        # assigning it to self.cTrav, we designate that this is the one that
-        # it should call traverse() on each frame.
+        # CollisionTraverser walks through the scene graph and calculates collisions.
         self.cTrav = CollisionTraverser()
 
-        # Collision traversers tell collision handlers about collisions, and then
-        # the handler decides what to do with the information. We are using a
-        # CollisionHandlerQueue, which simply creates a list of all of the
-        # collisions in a given pass. There are more sophisticated handlers like
-        # one that sends events and another that tries to keep collided objects
-        # apart, but the results are often better with a simple queue
+        # Collision traverser gives all the info it has to the collision handler.
         self.cHandler = CollisionHandlerQueue()
-        # Now we add the collision nodes that can create a collision to the
-        # traverser. The traverser will compare these to all others nodes in the
-        # scene. There is a limit of 32 CollisionNodes per traverser
-        # We add the collider, and the handler to use as a pair
+
         self.cTrav.addCollider(self.ballSphere, self.cHandler)
         self.cTrav.addCollider(self.ballGroundColNp, self.cHandler)
 
-        # Collision traversers have a built in tool to help visualize collisions.
-        # Uncomment the next line to see it.
-        #self.cTrav.showCollisions(render)
+        # Uncomment the next line to see the collisions.
+        # self.cTrav.showCollisions(render)
 
-        # This section deals with lighting for the ball. Only the ball was lit
-        # because the maze has static lighting pregenerated by the modeler
+        # Ambient lighting and directional lighting for the ball (the maze already has pre-generated lighting from blender model)
         ambientLight = AmbientLight("ambientLight")
-        ambientLight.setColor((.55, .55, .55, 1))
+        ambientLight.setColor((0.55, 0.55, 0.55, 1))
         directionalLight = DirectionalLight("directionalLight")
         directionalLight.setDirection(LVector3(0, 0, -1))
         directionalLight.setColor((0.375, 0.375, 0.375, 1))
@@ -179,69 +112,60 @@ class BallInMazeDemo(ShowBase):
         self.ballRoot.setLight(render.attachNewNode(ambientLight))
         self.ballRoot.setLight(render.attachNewNode(directionalLight))
 
-        # This section deals with adding a specular highlight to the ball to make
-        # it look shiny.  Normally, this is specified in the .egg file.
+        # Material for the ball
         m = Material()
         m.setSpecular((1, 1, 1, 1))
         m.setShininess(96)
         self.ball.setMaterial(m, 1)
 
-        # Finally, we call start for more initialization
+        # Finally, we call start for even more initialization
         self.start()
 
     def start(self):
         # The maze model also has a locator in it for where to start the ball
-        # To access it we use the find command
         startPos = self.maze.find("**/start").getPos()
         # Set the ball in the starting position
         self.ballRoot.setPos(startPos)
-        self.ballV = LVector3(0, 0, 0)         # Initial velocity is 0
-        self.accelV = LVector3(0, 0, 0)        # Initial acceleration is 0
+        self.ballV = LVector3(0, 0, 0)  # Initial velocity of the ball
+        self.accelV = LVector3(0, 0, 0)  # Initial acceleration of the ball
 
-        # Create the movement task, but first make sure it is not already
-        # running
+        # first make sure it is not already running
         taskMgr.remove("rollTask")
         self.mainLoop = taskMgr.add(self.rollTask, "rollTask")
 
-    # This function handles the collision between the ray and the ground
-    # Information about the interaction is passed in colEntry
+    # Handle the collision between the ray and the ground
     def groundCollideHandler(self, colEntry):
-        # Set the ball to the appropriate Z value for it to be exactly on the
-        # ground
+        # Update the Z value of the ball so it can be exactly on the ground
         newZ = colEntry.getSurfacePoint(render).getZ()
         self.ballRoot.setZ(newZ + .4)
 
-        # Find the acceleration direction. First the surface normal is crossed with
-        # the up vector to get a vector perpendicular to the slope
+        # Find the acceleration direction.
         norm = colEntry.getSurfaceNormal(render)
         accelSide = norm.cross(LVector3.up())
-        # Then that vector is crossed with the surface normal to get a vector that
-        # points down the slope. By getting the acceleration in 3D like this rather
-        # than in 2D, we reduce the amount of error per-frame, reducing jitter
         self.accelV = norm.cross(accelSide)
 
-    # This function handles the collision between the ball and a wall
+    # Handle the collision between the ball and a wall
     def wallCollideHandler(self, colEntry):
-        # First we calculate some numbers we need to do a reflection
         norm = colEntry.getSurfaceNormal(render) * -1  # The normal of the wall
-        curSpeed = self.ballV.length()                # The current speed
-        inVec = self.ballV / curSpeed                 # The direction of travel
-        velAngle = norm.dot(inVec)                    # Angle of incidance
+        curSpeed = self.ballV.length()  # The current speed
+        inVec = self.ballV / curSpeed  # The direction of travel
+        velAngle = norm.dot(inVec)  # Angle of incidence
         hitDir = colEntry.getSurfacePoint(render) - self.ballRoot.getPos()
         hitDir.normalize()
         # The angle between the ball and the normal
         hitAngle = norm.dot(hitDir)
 
-        # Ignore the collision if the ball is either moving away from the wall
-        # already (so that we don't accidentally send it back into the wall)
-        # and ignore it if the collision isn't dead-on (to avoid getting caught on
-        # corners)
-        if velAngle > 0 and hitAngle > .995:
+        """
+         Ignore the collision if the ball is either moving away from the wall
+         already (so that we don't accidentally send it back into the wall)
+         and ignore it if the collision isn't dead-on (to avoid getting caught on
+         corners)
+        """
+        if velAngle > 0 and hitAngle > 0.995:
             # Standard reflection equation
             reflectVec = (norm * norm.dot(inVec * -1) * 2) + inVec
 
-            # This makes the velocity half of what it was if the hit was dead-on
-            # and nearly exactly what it was if this is a glancing blow
+            # This makes the velocity half of what it was if the hit was dead-on and nearly exactly what it was if this was a glancing blow
             self.ballV = reflectVec * (curSpeed * (((1 - velAngle) * .5) + .5))
             # Since we have a collision, the ball is already a little bit buried in
             # the wall. This calculates a vector needed to move it so that it is
@@ -250,10 +174,9 @@ class BallInMazeDemo(ShowBase):
             newPos = self.ballRoot.getPos() + disp
             self.ballRoot.setPos(newPos)
 
-    # This is the task that deals with making everything interactive
+    # The task that deals with making everything interactive
     def rollTask(self, task):
-        # Standard technique for finding the amount of time since the last
-        # frame
+        # Standard technique for finding the amount of time since the last frame (delta time)
         dt = base.clock.dt
 
         # If dt is large, then there has been a # hiccup that could cause the ball
@@ -281,9 +204,9 @@ class BallInMazeDemo(ShowBase):
 
         # Finally, we move the ball
         # Update the velocity based on acceleration
-        self.ballV += self.accelV * dt * ACCEL
+        self.ballV += self.accelV * dt * ACCELERATION
         # Clamp the velocity to the maximum speed
-        if self.ballV.lengthSquared() > MAX_SPEED_SQ:
+        if self.ballV.lengthSquared() > MAX_SPEED ** 2:
             self.ballV.normalize()
             self.ballV *= MAX_SPEED
         # Update the position based on the velocity
@@ -298,7 +221,7 @@ class BallInMazeDemo(ShowBase):
         newRot = LRotationf(axis, 45.5 * dt * self.ballV.length())
         self.ball.setQuat(prevRot * newRot)
 
-        return Task.cont       # Continue the task indefinitely
+        return Task.cont  # Continue the task indefinitely
 
     # If the ball hits a hole trigger, then it should fall in the hole.
     # This is faked rather than dealing with the actual physics of it.
@@ -321,6 +244,7 @@ class BallInMazeDemo(ShowBase):
             Wait(1),
             Func(self.start)).start()
 
-# Finally, create an instance of our class and start 3d rendering
-demo = BallInMazeDemo()
-demo.run()
+
+if __name__ == '__main__':
+    demo = BallInMazeDemo()
+    demo.run()
