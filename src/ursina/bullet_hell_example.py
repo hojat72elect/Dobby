@@ -3,7 +3,6 @@ from ursina import Ursina, Entity, Circle, color, Mesh, hsv, scene, EditorCamera
 
 app = Ursina(forced_aspect_ratio=.6)
 
-
 bg = Entity(model='quad', scale=(30, 50), texture='grass', color=hsv(0,0,.2))
 player = Entity(model=Circle(3), color=color.azure, speed=8, y=-.4, z=-1)
 player.bullet_renderer = Entity(model=Mesh(mode='point', thickness=.2), texture='circle', color=color.yellow)
@@ -11,13 +10,11 @@ player.bullet_renderer = Entity(model=Mesh(mode='point', thickness=.2), texture=
 scene.fog_density = (10,50)
 ec = EditorCamera(rotation_x=-20)
 
-
 def shoot():
     player.bullet_renderer.model.vertices.append(player.position)
 
 shoot_cooldown = .1
 shoot_sequence = Sequence(Func(shoot), Wait(shoot_cooldown), loop=True)
-
 
 def update():
     move_direction = Vec2(held_keys['d']-held_keys['a'], held_keys['w']-held_keys['s']).normalized()
@@ -43,15 +40,11 @@ def update():
 
     player.bullet_renderer.model.generate()
 
-
 def input(key):
     if key == 'space':
         shoot_sequence.start()
     if key == 'space up':
         shoot_sequence.paused = True
-
-
-
 
 enemies = []
 enemy = Entity(model=Circle(3), rotation_z=180, position=(0, 16), color=color.red, z=-1, speed=3, hp=5)
@@ -60,8 +53,6 @@ enemies.append(enemy)
 def enemy_update():
     for e in enemies:
         e.position += e.up * enemy.speed * time.dt
-
-
 
 enemy_handler = Entity(update=enemy_update)
 
