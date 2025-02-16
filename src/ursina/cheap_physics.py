@@ -3,12 +3,11 @@ from ursina.shaders import lit_with_shadows_shader
 
 app = Ursina(size=(1280, 720))
 
-physics_entities: list = []
-
 class PhysicsEntity(Entity):
     def __init__(self, model='cube', collider='box', **kwargs):
         super().__init__(model=model, collider=collider, **kwargs)
-        physics_entities.append(self)
+        self.physics_entities = []
+        self.physics_entities.append(self)
 
     def update(self):
         if self.intersects():
@@ -21,8 +20,8 @@ class PhysicsEntity(Entity):
 
     def stop(self):
         self.velocity = Vec3(0, 0, 0)
-        if self in physics_entities:
-            physics_entities.remove(self)
+        if self in self.physics_entities:
+            self.physics_entities.remove(self)
 
     def on_destroy(self):
         self.stop()
