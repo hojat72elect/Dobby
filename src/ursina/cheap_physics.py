@@ -1,5 +1,6 @@
 from ursina import Ursina, Entity, Vec2, color, DirectionalLight, Vec3, Sky, camera, lerp, time
 from ursina.shaders import lit_with_shadows_shader
+from ursina.prefabs.first_person_controller import FirstPersonController
 
 app = Ursina(size=(1280, 720))
 
@@ -42,7 +43,6 @@ ground = Entity(
 )
 DirectionalLight().look_at(Vec3(1, -1, -1))
 
-from ursina.prefabs.first_person_controller import FirstPersonController
 
 player = FirstPersonController()
 Sky()
