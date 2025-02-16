@@ -3,11 +3,13 @@ from ursina.shaders import lit_with_shadows_shader
 
 app = Ursina(size=(1280, 720))
 
+
 class PhysicsEntity(Entity):
+
     def __init__(self, model='cube', collider='box', **kwargs):
         super().__init__(model=model, collider=collider, **kwargs)
-        self.physics_entities = []
-        self.physics_entities.append(self)
+        self.velocity = None
+        self.physics_entities = [self]
 
     def update(self):
         if self.intersects():
@@ -29,6 +31,7 @@ class PhysicsEntity(Entity):
     def throw(self, direction, force):
         pass
 
+
 Entity.default_shader = lit_with_shadows_shader
 ground = Entity(
     model='plane',
@@ -47,10 +50,14 @@ Sky()
 
 def input(key):
     if key == 'left mouse down':
-        e = PhysicsEntity(model='cube', color=color.azure, velocity=Vec3(0),
-                          position=player.position + Vec3(0, 1.5, 0) + player.forward, collider='sphere')
+        e = PhysicsEntity(
+            model='cube',
+            color=color.azure,
+            velocity=Vec3(0),
+            position=player.position + Vec3(0, 1.5, 0) + player.forward,
+            collider='sphere'
+        )
         e.velocity = (camera.forward + Vec3(0, .5, 0)) * 10
-        # physics_entities.append(e)
 
 
 app.run()
