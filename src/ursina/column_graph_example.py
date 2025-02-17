@@ -17,7 +17,9 @@ if __name__ == '__main__':
     sliders = list()
 
     for i, (name, value) in enumerate(data.items()):
-        column = Button(
+
+        # In fact, each column is just an Ursina Button
+        _column = Button(
             parent=scene,
             name=name,
             model='cube',
@@ -26,37 +28,50 @@ if __name__ == '__main__':
             color=color.hsv(30 * i, 1, .7),
             origin_y=-.5,
             text=name,
-            tooltip=Tooltip('00', color=color.light_text)  # to ensure uniform with
+            tooltip=Tooltip('00', color=color.light_text)  # to ensure uniform width of columns
         )
-        column.tooltip.text = str(value)
-        column.text_entity.scale *= .4
-        column.text_entity.world_y = column.world_y - .2
-        column.text_entity.z = -.5
-        column.text_entity.world_parent = scene
-        column.text_entity.color = column.color.tint(-.5)
+        _column.tooltip.text = str(value)
+        _column.text_entity.scale *= .4
+        _column.text_entity.world_y = _column.world_y - .2
+        _column.text_entity.z = -.5
+        _column.text_entity.world_parent = scene
+        _column.text_entity.color = _column.color.tint(-.5)
 
-        slider = ThinSlider(text=name, min=0, max=100, default=value, x=-.65, y=(-i * .04 * .75) - .15, step=1,
-                            dynamic=True)
-        slider.scale *= .75
-        sliders.append(slider)
+        _thin_slider = ThinSlider(
+            text=name,
+            min=0,
+            max=100,
+            default=value,
+            x=-.65,
+            y=(-i * .04 * .75) - .15,
+            step=1,
+            dynamic=True
+        )
+        _thin_slider.scale *= .75
+        sliders.append(_thin_slider)
 
 
-        def on_slider_changed(slider=slider, column=column):
+        def on_slider_changed(slider=_thin_slider, column=_column):
             column.scale_y = slider.value / 50
             column.tooltip.text = str(slider.value)
 
 
-        slider.on_value_changed = on_slider_changed
+        _thin_slider.on_value_changed = on_slider_changed
 
-    randomize_button = Button(position=(-.66, -.45), origin=(-.5, .5), color=color.dark_gray, text='<white>Randomize!',
-                              scale=(.25, .05))
+    randomize_button = Button(
+        position=(-.66, -.45),
+        origin=(-.5, .5),
+        color=color.dark_gray,
+        text='<white>Randomize!',
+        scale=(.25, .05)
+    )
     randomize_button.scale *= .75
 
 
     def randomize():
-        for s in sliders:
-            s.value = random.randint(0, 100)
-            s.on_value_changed()
+        for slider in sliders:
+            slider.value = random.randint(0, 100)
+            slider.on_value_changed()
 
 
     randomize_button.on_click = randomize
