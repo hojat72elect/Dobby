@@ -1,8 +1,8 @@
+from src.oop.BankAccount import BankAccount
+
 if __name__ == '__main__':
 
-    account_name = 'Joe'
-    account_balance = 100
-    account_password = 'soup'
+    account = BankAccount(name='Joe', balance=100, password='soup')
 
     while True:
         print()
@@ -17,10 +17,10 @@ if __name__ == '__main__':
         if action == 'b':
             print('\nGet Balance:')
             user_password: str = input('Please enter the password: ')
-            if user_password != account_password:
+            if user_password != account.password:
                 print('Incorrect password')
             else:
-                print('Your balance is:', account_balance)
+                print('Your balance is:', account.balance)
 
         elif action == 'd':
             print('Deposit:')
@@ -30,18 +30,18 @@ if __name__ == '__main__':
             if user_deposit_amount < 0:
                 print('You cannot deposit a negative amount!')
 
-            elif user_password != account_password:
+            elif user_password != account.password:
                 print('Incorrect password')
 
             else:  # everything was OK
-                account_balance += user_deposit_amount
-                print('Your new balance is:', account_balance)
+                account.balance += user_deposit_amount
+                print('Your new balance is:', account.balance)
 
         elif action == 's':
             print('Show:')
-            print('       Name', account_name)
-            print('       Balance:', account_balance)
-            print('       Password:', account_password)
+            print('       Name', account.name)
+            print('       Balance:', account.balance)
+            print('       Password:', account.password)
             print()
 
         elif action == 'q':
@@ -56,14 +56,14 @@ if __name__ == '__main__':
             if user_withdraw_amount < 0:
                 print('You cannot withdraw a negative amount')
 
-            elif user_password != account_password:
+            elif user_password != account.password:
                 print('Incorrect password for this account')
 
-            elif user_withdraw_amount > account_balance:
+            elif user_withdraw_amount > account.balance:
                 print('You cannot withdraw more than you have in your account')
 
             else:  # Everything was OK
-                account_balance -= user_withdraw_amount
-                print(f'Your new balance is : {account_balance}')
+                account.balance -= user_withdraw_amount
+                print(f'Your new balance is : {account.balance}')
 
     print('Done')
