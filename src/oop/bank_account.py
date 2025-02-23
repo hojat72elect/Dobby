@@ -1,6 +1,6 @@
-accountName = 'Joe'
-accountBalance = 100
-accountPassword = 'soup'
+account_name = 'Joe'
+account_balance = 100
+account_password = 'soup'
 
 while True:
     print()
@@ -8,43 +8,38 @@ while True:
     print('Press d to make a deposit')
     print('Press w to make a withdrawal')
     print('Press s to show the account')
-    print('Press q to quit')
-    print()
+    print('Press q to quit\n')
 
-    action = input('What do you want to do? ')
-    action = action.lower()  # force lowercase
-    action = action[0]  # just use first letter
-    print()
+    action: str = input('What do you want to do? ').lower()[0]
 
     if action == 'b':
-        print('Get Balance:')
-        userPassword = input('Please enter the password: ')
-        if userPassword != accountPassword:
+        print('\nGet Balance:')
+        user_password: str = input('Please enter the password: ')
+        if user_password != account_password:
             print('Incorrect password')
         else:
-            print('Your balance is:', accountBalance)
+            print('Your balance is:', account_balance)
 
     elif action == 'd':
         print('Deposit:')
-        userDepositAmount = input('Please enter amount to deposit: ')
-        userDepositAmount = int(userDepositAmount)
-        userPassword = input('Please enter the password: ')
+        user_deposit_amount = int(input('Please enter amount to deposit: '))
+        user_password: str = input('Please enter the password: ')
 
-        if userDepositAmount < 0:
+        if user_deposit_amount < 0:
             print('You cannot deposit a negative amount!')
 
-        elif userPassword != accountPassword:
+        elif user_password != account_password:
             print('Incorrect password')
 
-        else:  # OK
-            accountBalance = accountBalance + userDepositAmount
-            print('Your new balance is:', accountBalance)
+        else:  # everything was OK
+            account_balance += user_deposit_amount
+            print('Your new balance is:', account_balance)
 
-    elif action == 's':  # show
+    elif action == 's':
         print('Show:')
-        print('       Name', accountName)
-        print('       Balance:', accountBalance)
-        print('       Password:', accountPassword)
+        print('       Name', account_name)
+        print('       Balance:', account_balance)
+        print('       Password:', account_password)
         print()
 
     elif action == 'q':
@@ -53,21 +48,20 @@ while True:
     elif action == 'w':
         print('Withdraw:')
 
-        userWithdrawAmount = input('Please enter the amount to withdraw: ')
-        userWithdrawAmount = int(userWithdrawAmount)
-        userPassword = input('Please enter the password: ')
+        user_withdraw_amount = int(input('Please enter the amount to withdraw: '))
+        user_password = input('Please enter the password: ')
 
-        if userWithdrawAmount < 0:
+        if user_withdraw_amount < 0:
             print('You cannot withdraw a negative amount')
 
-        elif userPassword != accountPassword:
+        elif user_password != account_password:
             print('Incorrect password for this account')
 
-        elif userWithdrawAmount > accountBalance:
+        elif user_withdraw_amount > account_balance:
             print('You cannot withdraw more than you have in your account')
 
-        else:  # OK
-            accountBalance = accountBalance - userWithdrawAmount
-            print('Your new balance is:', accountBalance)
+        else:  # Everything was OK
+            account_balance -= user_withdraw_amount
+            print(f'Your new balance is : {account_balance}')
 
 print('Done')
