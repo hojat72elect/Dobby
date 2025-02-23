@@ -1,40 +1,47 @@
-# Account class
+class BankAccount():
+    """
+    This is a class to represent a bank account.
+    """
 
-class Account():
-    def __init__(self, name, balance, password):
+    def __init__(self, name: str, balance: int, password: str):
         self.name = name
-        self.balance = int(balance)
+        self.balance = balance
         self.password = password
 
-    def deposit(self, amountToDeposit, password):
+    def deposit(self, amount_to_deposit: int, password: str) -> int | None:
         if password != self.password:
             print('Sorry, incorrect password')
             return None
 
-        if amountToDeposit < 0:
-            print('You cannot deposit a negative amount')
+        # User has provided the correct password
+        if amount_to_deposit <= 0:
+            print('The amount to deposit must be greater than zero')
             return None
 
-        self.balance = self.balance + amountToDeposit
+        # The amount to deposit is greater than zero
+        self.balance += amount_to_deposit
         return self.balance
 
-    def withdraw(self, amountToWithdraw, password):
+    def withdraw(self, amount_to_withdraw: int, password: str) -> int | None:
         if password != self.password:
             print('Incorrect password for this account')
             return None
 
-        if amountToWithdraw < 0:
-            print('You cannot withdraw a negative amount')
+        # User has provided the correct password
+        if amount_to_withdraw <= 0:
+            print('The amount to withdraw must be greater than zero')
             return None
 
-        if amountToWithdraw > self.balance:
+        # The amount to withdraw is greater than zero
+        if amount_to_withdraw > self.balance:
             print('You cannot withdraw more than you have in your account')
             return None
 
-        self.balance = self.balance - amountToWithdraw
+        # The amount to withdraw is less than or equal to the balance
+        self.balance -= amount_to_withdraw
         return self.balance
 
-    def getBalance(self, password):
+    def getBalance(self, password: str) -> int | None:
         if password != self.password:
             print('Sorry, incorrect password')
             return None
@@ -42,7 +49,6 @@ class Account():
 
     # Added for debugging
     def show(self):
-        print('       Name:', self.name)
-        print('       Balance:', self.balance)
-        print('       Password:', self.password)
-        print()
+        print(f'       Name : {self.name}')
+        print(f'       Balance : {self.balance}')
+        print(f'       Password : {self.password}')
