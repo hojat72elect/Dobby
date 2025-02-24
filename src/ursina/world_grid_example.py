@@ -1,6 +1,9 @@
 import ursina
 
 if __name__ == '__main__':
+    """
+    Creates a 3D grid pattern 
+    """
 
     app = ursina.Ursina()
 
@@ -13,6 +16,6 @@ if __name__ == '__main__':
         subgrid = ursina.duplicate(grid)
         subgrid.model = ursina.Grid(s * 4, s * 4)
         subgrid.color = ursina.color.hsv(0, 0, .4, ursina.lerp(.8, 0, t))
-        ursina.EditorCamera()
+        ursina.EditorCamera() # creates a controllable camera for seeing the grid and going up and down , and zoom
 
     app.run()
