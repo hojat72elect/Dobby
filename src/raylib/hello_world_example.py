@@ -7,7 +7,7 @@ if __name__ == '__main__':
     while not pyray.window_should_close():
         pyray.begin_drawing()
         pyray.clear_background(pyray.WHITE)
-        pyray.draw_text("Hello World\nMy name is RayLib.", 190, 200, 20, pyray.VIOLET)
+        pyray.draw_text("Hello World\nMy name is Hojat and I enjoy coding in RayLib.", 190, 200, 20, pyray.VIOLET)
         pyray.end_drawing()
 
     pyray.close_window()
