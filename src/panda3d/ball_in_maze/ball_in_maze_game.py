@@ -25,15 +25,21 @@ class BallInMazeDemo(ShowBase):
         ShowBase.__init__(self)
 
         self.title = OnscreenText(
-            text="Panda3D: Tutorial - Collision Detection",
-            parent=base.a2dBottomRight, align=TextNode.ARight,
-            fg=(1, 1, 1, 1), pos=(-0.1, 0.1), scale=.08,
+            text="Panda3D: Tutorial - Ball in a Maze Game",
+            parent=base.a2dBottomRight,
+            align=TextNode.ARight,
+            fg=(1, 1, 1, 1),
+            pos=(-0.1, 0.1),
+            scale=.08,
             shadow=(0, 0, 0, 0.5)
         )
         self.instructions = OnscreenText(
             text="Mouse pointer tilts the board",
-            parent=base.a2dTopLeft, align=TextNode.ALeft,
-            pos=(0.05, -0.08), fg=(1, 1, 1, 1), scale=.06,
+            parent=base.a2dTopLeft,
+            align=TextNode.ALeft,
+            pos=(0.05, -0.08),
+            fg=(1, 1, 1, 1),
+            scale=.06,
             shadow=(0, 0, 0, 0.5)
         )
 
@@ -42,11 +48,11 @@ class BallInMazeDemo(ShowBase):
         self.disableMouse()  # Disable default mouse-based camera control.
         camera.setPosHpr(0, 0, 25, 0, -90, 0)  # Position of the camera
 
-        # Load the maze
+        # Load the maze (it'll be a file with the ".egg.pz" extension)
         self.maze = loader.loadModel("models/maze")
         self.maze.reparentTo(render)
 
-        self.walls = self.maze.find("**/wall_collide")  # the collision node for walls
+        self.walls = self.maze.find("**/wall_collide")  # the collision node for walls (They are already defined in our maze model)
 
         self.walls.node().setIntoCollideMask(BitMask32.bit(0))  # Walls collide with the ball
         #  Uncomment the next line to see the collision walls
@@ -55,40 +61,40 @@ class BallInMazeDemo(ShowBase):
         # Define 6 holes in the maze
         self.loseTriggers = []
         for i in range(6):
-            trigger = self.maze.find("**/hole_collide" + str(i))
-            trigger.node().setIntoCollideMask(BitMask32.bit(0))
+            trigger = self.maze.find(f"**/hole_collide{i}")
+            trigger.node().setIntoCollideMask(BitMask32.bit(0)) # holes collide with the ball
             trigger.node().setName("loseTrigger")
             self.loseTriggers.append(trigger)
-            # Uncomment this line to see the triggers
+            # Uncomment this line to see the holes' triggers
             # trigger.show()
 
-        # The ground doesn't collide with the ball
         self.mazeGround = self.maze.find("**/ground_collide")
-        self.mazeGround.node().setIntoCollideMask(BitMask32.bit(1))
+        self.mazeGround.node().setIntoCollideMask(BitMask32.bit(1)) # The ground doesn't collide with the ball
 
-        # Load the ball
+        # Load the ball (Another file with the ".egg.pz" extension)
         self.ballRoot = render.attachNewNode("ballRoot")
         self.ball = loader.loadModel("models/ball")
         self.ball.reparentTo(self.ballRoot)
 
         # The collision sphere for the ball
         self.ballSphere = self.ball.find("**/ball")
+        # the next 2 lines just define the ball as a rigid body which can collide with the other stuff.
         self.ballSphere.node().setFromCollideMask(BitMask32.bit(0))
         self.ballSphere.node().setIntoCollideMask(BitMask32.allOff())
 
-        # The ray that starts from above the ball and towards the ground (in order to understand the tilting of the ground)
-        self.ballGroundRay = CollisionRay()  # Create the ray
-        self.ballGroundRay.setOrigin(0, 0, 10)  # Set its origin
-        self.ballGroundRay.setDirection(0, 0, -1)  # And its direction
+        # The ray that starts from above the ball and towards the ground (in order to understand the tilting of the ground and the gravity it applies to the ball)
+        self.ballGravityCollisionRay = CollisionRay()
+        self.ballGravityCollisionRay.setOrigin(0, 0, 10)
+        self.ballGravityCollisionRay.setDirection(0, 0, -1)
 
-        self.ballGroundCol = CollisionNode('groundRay')
-        self.ballGroundCol.addSolid(self.ballGroundRay)  # Add the ray
-        self.ballGroundCol.setFromCollideMask(BitMask32.bit(1))
-        self.ballGroundCol.setIntoCollideMask(BitMask32.allOff())
+        self.ballGravityCollisionNode = CollisionNode('groundRay')
+        self.ballGravityCollisionNode.addSolid(self.ballGravityCollisionRay)  # Add the ray
+        self.ballGravityCollisionNode.setFromCollideMask(BitMask32.bit(1))
+        self.ballGravityCollisionNode.setIntoCollideMask(BitMask32.allOff())
 
-        self.ballGroundColNp = self.ballRoot.attachNewNode(self.ballGroundCol)
-        # Uncomment this line to see the ray
-        # self.ballGroundColNp.show()
+        self.ballGravityCollisionNodePath = self.ballRoot.attachNewNode(self.ballGravityCollisionNode)
+        # Uncomment next line to see the collision ray
+        # self.ballGravityCollisionNodePath.show()
 
         # CollisionTraverser walks through the scene graph and calculates collisions.
         self.cTrav = CollisionTraverser()
@@ -97,7 +103,7 @@ class BallInMazeDemo(ShowBase):
         self.cHandler = CollisionHandlerQueue()
 
         self.cTrav.addCollider(self.ballSphere, self.cHandler)
-        self.cTrav.addCollider(self.ballGroundColNp, self.cHandler)
+        self.cTrav.addCollider(self.ballGravityCollisionNodePath, self.cHandler)
 
         # Uncomment the next line to see the collisions.
         # self.cTrav.showCollisions(render)
@@ -246,5 +252,4 @@ class BallInMazeDemo(ShowBase):
 
 
 if __name__ == '__main__':
-    demo = BallInMazeDemo()
-    demo.run()
+    BallInMazeDemo().run()
