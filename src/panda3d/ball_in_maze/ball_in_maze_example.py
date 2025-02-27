@@ -18,7 +18,7 @@ ACCELERATION = 70  # Acceleration in feet per second^2
 MAX_SPEED = 5  # Max speed in feet per second
 
 
-class BallInMazeDemo(ShowBase):
+class BallInMazeExample(ShowBase):
 
     def __init__(self):
         # Initialize the ShowBase class
@@ -252,4 +252,4 @@ class BallInMazeDemo(ShowBase):
 
 
 if __name__ == '__main__':
-    BallInMazeDemo().run()
+    BallInMazeExample().run()

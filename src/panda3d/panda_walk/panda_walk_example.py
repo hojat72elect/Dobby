@@ -9,7 +9,7 @@ from panda3d.core import Point3
 """
 Shows a panda walking in a glade. And the camera spins around it.
 """
-class MyApp(ShowBase):
+class PandaWalkExample(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
 
@@ -45,7 +45,6 @@ class MyApp(ShowBase):
         self.pandaPace = Sequence(posInterval1, hprInterval1, posInterval2, hprInterval2, name="pandaPace")
         self.pandaPace.loop()
 
-    # Define a procedure to move the camera.
     def spinCameraTask(self, task) -> int:
         angleDegrees = task.time * 6.0
         angleRadians = angleDegrees * (pi / 180.0)
@@ -55,5 +54,5 @@ class MyApp(ShowBase):
 
 
 if __name__ == '__main__':
-    app = MyApp()
+    app = PandaWalkExample()
     app.run()
