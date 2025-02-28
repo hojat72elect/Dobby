@@ -1,64 +1,60 @@
-import harfang as hg
-from harfangui import get_assets_path, HarfangUI as hgui
-from os import path
+import os
+
 import harfang.bin
-from shutil import copy
+import harfangui
 
-# Build the assets locally
+if __name__ == '__main__':
 
-harfang.bin.assetc(path.join(get_assets_path(), 'assets'), 'assets_compiled', '-quiet')
+    harfang.bin.assetc(os.path.join(harfangui.get_assets_path(), 'assets'), 'assets_compiled', '-quiet')
 
-# Init Harfang
+    harfang.InputInit()
+    harfang.WindowSystemInit()
 
-hg.InputInit()
-hg.WindowSystemInit()
+    width, height = 1280, 720
+    window = harfang.RenderInit(
+        'Harfang GUI - 2D window',
+        width,
+        height,
+        harfang.RF_VSync | harfang.RF_MSAA4X | harfang.RF_MaxAnisotropy
+    )
 
-width, height = 1280, 720
-window = hg.RenderInit('Harfang GUI - 2D window', width, height, hg.RF_VSync | hg.RF_MSAA4X | hg.RF_MaxAnisotropy)
+    harfang.AddAssetsFolder("assets_compiled")
 
-hg.AddAssetsFolder("assets_compiled")
+    harfangui.HarfangUI.init(["roboto-light.ttf"], [20], width, height)
 
-# Setup HarfangUI
+    keyboard = harfang.Keyboard()
+    mouse = harfang.Mouse()
 
-hgui.init(["roboto-light.ttf"], [20], width, height)
+    flag_check_box0 = False
 
-# Setup inputs
+    while not harfang.ReadKeyboard().Key(harfang.K_Escape) and harfang.IsWindowOpen(window):
 
-keyboard = hg.Keyboard()
-mouse = hg.Mouse()
+        _, width, height = harfang.RenderResetToWindow(window, width, height, harfang.RF_VSync | harfang.RF_MSAA4X | harfang.RF_MaxAnisotropy)
 
-flag_check_box0 = False
+        dt = harfang.TickClock()
+        keyboard.Update()
+        mouse.Update()
+        view_id = 0
 
-# Main loop
+        if harfangui.HarfangUI.begin_frame(dt, mouse, keyboard, window):
 
-while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(window):
+            if harfangui.HarfangUI.begin_window_2D("My window", harfang.Vec2(50, 50), harfang.Vec2(500, 300), 1):
 
-    _, width, height = hg.RenderResetToWindow(window, width, height, hg.RF_VSync | hg.RF_MSAA4X | hg.RF_MaxAnisotropy)
+                harfangui.HarfangUI.info_text("info1", "Simple Window2D")
 
-    dt = hg.TickClock()
-    keyboard.Update()
-    mouse.Update()
-    view_id = 0
+                f_pressed, f_down = harfangui.HarfangUI.button("Button")
+                if f_pressed:
+                    print("Click btn")
 
-    if hgui.begin_frame(dt, mouse, keyboard, window):
+                _, flag_check_box0 = harfangui.HarfangUI.check_box("Check box", flag_check_box0)
 
-        if hgui.begin_window_2D("My window", hg.Vec2(50, 50), hg.Vec2(500, 300), 1):
+                harfangui.HarfangUI.end_window()
 
-            hgui.info_text("info1", "Simple Window2D")
+            harfangui.HarfangUI.end_frame(view_id)
 
-            f_pressed, f_down = hgui.button("Button")
-            if f_pressed:
-                print("Click btn")
+        harfang.Frame()
 
-            _, flag_check_box0 = hgui.check_box("Check box", flag_check_box0)
+        harfang.UpdateWindow(window)
 
-            hgui.end_window()
-
-        hgui.end_frame(view_id)
-
-    hg.Frame()
-
-    hg.UpdateWindow(window)
-
-hg.RenderShutdown()
-hg.DestroyWindow(window)
+    harfang.RenderShutdown()
+    harfang.DestroyWindow(window)
