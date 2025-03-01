@@ -1,13 +1,11 @@
 import sys
-
 import pygame
-
-from src.pygame.cloth.ClothObj import ClothObj
+from src.pygame.cloth.Cloth import Cloth
 from src.pygame.cloth.load_rags import load_rags
 
 if __name__ == '__main__':
 
-    # setup the pygame and create a window for the game
+    # set up the pygame and create a window for the game
     main_clock = pygame.time.Clock()
     pygame.init()
     pygame.display.set_caption("2D Cloth Simulation")
@@ -15,12 +13,12 @@ if __name__ == '__main__':
 
     # Load the rag
     rag_data = load_rags('resources')
-    my_cloth = ClothObj(rag_data['vine'])
+    my_cloth = Cloth(rag_data['vine'])
     render_mode = 0
 
     while True:
         # Background of the screen
-        screen.fill((0,0,0))
+        screen.fill((0, 0, 0))
 
         # Get position of the mouse
         mx, my = pygame.mouse.get_pos()
@@ -54,7 +52,3 @@ if __name__ == '__main__':
 
         pygame.display.update()
         main_clock.tick(60)
-
-
-
-

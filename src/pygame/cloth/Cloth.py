@@ -3,7 +3,7 @@ import pygame
 from src.pygame.cloth.get_dis import get_dis
 
 
-class ClothObj():
+class Cloth:
     def __init__(self, rag):
         self.points = [p + p for p in rag['points']]  # dupe position for last position
         self.orig_points = [p + p for p in rag['points']]
@@ -49,7 +49,7 @@ class ClothObj():
                 self.points[stick[1]][0] += dx * mv_ratio * 0.85
                 self.points[stick[1]][1] += dy * mv_ratio * 0.85
 
-    def render_polygon(self, target_surf, color, offset=[0, 0]):
+    def render_polygon(self, target_surf, color, offset=(0, 0)):
         y_points = [p[1] * self.scale for p in self.points]
         x_points = [p[0] * self.scale for p in self.points]
         min_x = min(x_points)
@@ -63,12 +63,12 @@ class ClothObj():
         surf.set_colorkey((0, 0, 0))
         m = pygame.mask.from_surface(surf)
         outline = m.outline()  # get outline of mask
-        surf.fill((0, 0, 0))  # fill with color that will be colorkey
+        surf.fill((0, 0, 0))  # fill with color that will be color key
         surf.set_colorkey((0, 0, 0))
         pygame.draw.polygon(surf, color, outline)
         target_surf.blit(surf, (min_x - offset[0], min_y - offset[1]))
 
-    def render_sticks(self, surf, offset=[0, 0]):
+    def render_sticks(self, surf, offset=(0, 0)):
         render_points = [[p[0] * self.scale - offset[0], p[1] * self.scale - offset[1]] for p in self.points]
         for stick in self.sticks:
             pygame.draw.line(surf, (255, 255, 255), render_points[stick[0]], render_points[stick[1]], 1)
