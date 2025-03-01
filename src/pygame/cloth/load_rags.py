@@ -5,5 +5,5 @@ def load_rags(path: str):
     rag_list = os.listdir(path)
     rags = {}
     for rag in rag_list:
-        rags[rag.split('.')[0]] = read_json(path + '/' + rag)
+        rags[rag.split('.')[0]] = read_json(f"{path}/{rag}")
     return rags
