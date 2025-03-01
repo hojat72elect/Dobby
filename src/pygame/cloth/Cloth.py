@@ -1,6 +1,5 @@
 import pygame
-
-from src.pygame.cloth.get_dis import get_dis
+from src.pygame.cloth.get_dis import get_distance
 
 
 class Cloth:
@@ -14,7 +13,7 @@ class Cloth:
         self.grounded = rag['grounded']
 
     def add_stick(self, points):
-        self.sticks.append([points[0], points[1], get_dis(self.points[points[0]][:2], self.points[points[1]][:2])])
+        self.sticks.append([points[0], points[1], get_distance(self.points[points[0]][:2], self.points[points[1]][:2])])
 
     def update(self):
         for i, point in enumerate(self.points):
@@ -37,7 +36,7 @@ class Cloth:
 
     def update_sticks(self):
         for stick in self.sticks:
-            dis = get_dis(self.points[stick[0]][:2], self.points[stick[1]][:2])
+            dis = get_distance(self.points[stick[0]][:2], self.points[stick[1]][:2])
             dis_dif = stick[2] - dis
             mv_ratio = dis_dif / dis / 2
             dx = self.points[stick[1]][0] - self.points[stick[0]][0]
@@ -49,7 +48,7 @@ class Cloth:
                 self.points[stick[1]][0] += dx * mv_ratio * 0.85
                 self.points[stick[1]][1] += dy * mv_ratio * 0.85
 
-    def render_polygon(self, target_surf, color, offset=(0, 0)):
+    def render_polygon(self, target_surface, color, offset=(0, 0)):
         y_points = [p[1] * self.scale for p in self.points]
         x_points = [p[0] * self.scale for p in self.points]
         min_x = min(x_points)
@@ -58,15 +57,15 @@ class Cloth:
         max_y = max(y_points)
         width = int(max_x - min_x + 2)
         height = int(max_y - min_y + 2)
-        surf = pygame.Surface((width, height))
-        self.render_sticks(surf, (int(min_x), int(min_y)))
-        surf.set_colorkey((0, 0, 0))
-        m = pygame.mask.from_surface(surf)
-        outline = m.outline()  # get outline of mask
-        surf.fill((0, 0, 0))  # fill with color that will be color key
-        surf.set_colorkey((0, 0, 0))
-        pygame.draw.polygon(surf, color, outline)
-        target_surf.blit(surf, (min_x - offset[0], min_y - offset[1]))
+        surface = pygame.Surface((width, height))
+        self.render_sticks(surface, (int(min_x), int(min_y)))
+        surface.set_colorkey((0, 0, 0))
+        mask = pygame.mask.from_surface(surface)
+        outline = mask.outline()  # get outline of the mask
+        surface.fill((0, 0, 0))  # fill with color that will be colorkey
+        surface.set_colorkey((0, 0, 0))
+        pygame.draw.polygon(surface, color, outline)
+        target_surface.blit(surface, (min_x - offset[0], min_y - offset[1]))
 
     def render_sticks(self, surf, offset=(0, 0)):
         render_points = [[p[0] * self.scale - offset[0], p[1] * self.scale - offset[1]] for p in self.points]
