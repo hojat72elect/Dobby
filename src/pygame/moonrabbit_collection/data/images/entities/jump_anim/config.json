@@ -1,0 +1,1 @@
+{"images": {}, "animations": {"idle": {"offset": [0, 0], "speed": 2.0, "loop": false, "paused": false, "frames": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}}, "file_path": "data/images/entities/jump_anim", "id": "jump_anim", "centered": false, "offset": [-7, -2], "colorkey": [0, 0, 0], "size": [1, 1], "group": "entity", "collide_with": [], "default": "idle"}

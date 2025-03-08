@@ -1,0 +1,1 @@
+{"images": {}, "animations": {"idle": {"offset": [0, 0], "speed": 1.0, "loop": true, "paused": false, "frames": [1.2, 0.1]}}, "file_path": "data/images/entities/luna", "id": "luna", "centered": false, "offset": [0, 0], "colorkey": [0, 0, 0], "size": [8, 16], "group": "entity", "collide_with": [], "default": "idle"}

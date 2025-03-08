@@ -1,0 +1,1 @@
+{"images": {}, "animations": {"idle": {"offset": [0, 0], "speed": 1.65, "loop": false, "paused": false, "frames": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]}}, "file_path": "data/images/entities/land_anim", "id": "land_anim", "centered": false, "offset": [-7, -3], "colorkey": [0, 0, 0], "size": [1, 1], "group": "entity", "collide_with": [], "default": "idle"}
