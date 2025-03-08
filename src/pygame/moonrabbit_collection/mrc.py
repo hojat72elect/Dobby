@@ -134,5 +134,5 @@ class Game(pp.PygpenGame):
                                 'time': int((self.e['Window'].time - self.e['Window'].start_time) * 100),
                                 'camera': tuple(list(self.camera))})
 
-
-Game().run()
+if __name__ == '__main__':
+    Game().run()
