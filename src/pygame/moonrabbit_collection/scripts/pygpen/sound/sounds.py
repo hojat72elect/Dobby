@@ -6,6 +6,7 @@ from ..misc.errors import InvalidAsset
 from ..utils.elements import ElementSingleton
 from ..utils.io import recursive_file_op
 
+
 class Sounds(ElementSingleton):
     def __init__(self, path=None, filetype='wav'):
         super().__init__()
@@ -16,7 +17,7 @@ class Sounds(ElementSingleton):
         self.pan_vol = True
         if path:
             self.load(path)
-    
+
     def load(self, path):
         self.path = path
         self.sounds = recursive_file_op(self.path, lambda x: pygame.mixer.Sound(x), filetype=self.filetype)
@@ -41,4 +42,3 @@ class Sounds(ElementSingleton):
             channel.set_volume(volumes[0] * volume, volumes[1] * volume)
         else:
             channel.set_volume(volume)
-        

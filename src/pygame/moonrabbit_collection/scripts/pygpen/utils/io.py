@@ -1,16 +1,19 @@
 import os
 import json
 
+
 def read_f(path):
     f = open(path, 'r')
     data = f.read()
     f.close()
     return data
 
+
 def write_f(path, data):
     f = open(path, 'w')
     f.write(data)
     f.close()
+
 
 def read_json(path):
     f = open(path, 'r')
@@ -18,28 +21,34 @@ def read_json(path):
     f.close()
     return data
 
+
 def write_json(path, data):
     f = open(path, 'w')
     json.dump(data, f)
     f.close()
-    
+
+
 def tjson_hook(obj):
     if type(obj) == dict:
         for key in list(obj):
-            if (type(key) == str) and (key.translate({ord(k): None for k in ' (),t\0'}).isalnum()) and (key.find(',') != -1) and (key[:2] == 't\0'):
+            if (type(key) == str) and (key.translate({ord(k): None for k in ' (),t\0'}).isalnum()) and (
+                    key.find(',') != -1) and (key[:2] == 't\0'):
                 new_key = tuple(int(v) for v in key.translate({ord(k): None for k in ' ()t\0'}).split(','))
                 obj[new_key] = obj[key]
                 del obj[key]
     return obj
 
+
 def tjson_hook_loose(obj):
     if type(obj) == dict:
         for key in list(obj):
-            if (type(key) == str) and (key.translate({ord(k): None for k in ' (),t\0'}).isalnum()) and (key.find(',') != -1):
+            if (type(key) == str) and (key.translate({ord(k): None for k in ' (),t\0'}).isalnum()) and (
+                    key.find(',') != -1):
                 new_key = tuple(int(v) for v in key.translate({ord(k): None for k in ' ()t\0'}).split(','))
                 obj[new_key] = obj[key]
                 del obj[key]
     return obj
+
 
 def tuple_change_keys(obj, convert):
     if isinstance(obj, (str, int, float)):
@@ -54,13 +63,16 @@ def tuple_change_keys(obj, convert):
         return obj
     return new
 
+
 def tuplestrkey(obj):
     if type(obj) == tuple:
         obj = 't\0' + str(obj).replace(' ', '')
     return obj
 
+
 def tjson_encode(data):
     return json.dumps(tuple_change_keys(data, tuplestrkey))
+
 
 def tjson_decode(data, loose=False):
     if loose:
@@ -68,11 +80,14 @@ def tjson_decode(data, loose=False):
     else:
         return json.loads(data, object_hook=tjson_hook)
 
+
 def read_tjson(path, loose=False):
     return tjson_decode(read_f(path), loose=loose)
 
+
 def write_tjson(path, data):
     write_f(path, tjson_encode(data))
+
 
 def recursive_file_op(path, func, filetype=None):
     data = {}

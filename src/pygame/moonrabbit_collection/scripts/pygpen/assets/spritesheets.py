@@ -6,6 +6,7 @@ from ..utils.io import read_tjson, write_tjson
 from ..utils.gfx import clip
 from .asset_utils import load_img_directory
 
+
 def load_spritesheet_config(path):
     if os.path.isfile(path):
         config = read_tjson(path, loose=True)
@@ -13,6 +14,7 @@ def load_spritesheet_config(path):
         config = {}
     write_tjson(path, config)
     return config
+
 
 def parse_spritesheet(surf, split_color=(0, 255, 255)):
     row_start = None
@@ -45,7 +47,8 @@ def parse_spritesheet(surf, split_color=(0, 255, 255)):
                                 break
                             y2 += 1
                         tile_bounds_y = (row_start, y2)
-                    rect = pygame.Rect(col_bounds_x[0] + 1, tile_bounds_y[0] + 1, col_bounds_x[1] - col_bounds_x[0], tile_bounds_y[1] - tile_bounds_y[0])
+                    rect = pygame.Rect(col_bounds_x[0] + 1, tile_bounds_y[0] + 1, col_bounds_x[1] - col_bounds_x[0],
+                                       tile_bounds_y[1] - tile_bounds_y[0])
                     tiles[tuple(loc)] = clip(surf, rect)
                     loc[0] += 1
                     col_start = None
@@ -53,6 +56,7 @@ def parse_spritesheet(surf, split_color=(0, 255, 255)):
             loc[0] = 0
             row_start = None
     return tiles
+
 
 def load_spritesheets(path, split_color=(0, 255, 255), colorkey=(0, 0, 0)):
     spritesheets = load_img_directory(path, colorkey=colorkey)

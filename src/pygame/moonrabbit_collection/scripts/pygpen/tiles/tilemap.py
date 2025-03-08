@@ -6,8 +6,12 @@ from ..data_structures.quads import Quads
 
 BORDERS = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (0, 0)]
 
+
 def basic_tile_render(tile, offset=(0, 0), group='default'):
-    tile.e['Renderer'].blit(tile.img, (tile.raw_pos[0] + tile.offset[0] - offset[0], tile.raw_pos[1] + tile.offset[1] - offset[1]), z=tile.layer, group=group)
+    tile.e['Renderer'].blit(tile.img, (
+    tile.raw_pos[0] + tile.offset[0] - offset[0], tile.raw_pos[1] + tile.offset[1] - offset[1]), z=tile.layer,
+                            group=group)
+
 
 class Tile(Element):
     def __init__(self, group, tile_id=(0, 0), pos=(0, 0), layer=0, custom_data=''):
@@ -23,13 +27,14 @@ class Tile(Element):
         self.flags = set(self.config['flags'] if 'flags' in self.config else ['solid'])
         self.physics_type = None
         self.custom_data = custom_data
-        
+
     def render(self, offset=(0, 0), group='default'):
         self.render_func(self, offset=offset, group=group)
-    
+
     def primitive_render(self, surf, offset=(0, 0)):
-        surf.blit(self.img, (self.raw_pos[0] + self.offset[0] - offset[0], self.raw_pos[1] + self.offset[1] - offset[1]))
-        
+        surf.blit(self.img,
+                  (self.raw_pos[0] + self.offset[0] - offset[0], self.raw_pos[1] + self.offset[1] - offset[1]))
+
     def shift_clone(self, pos):
         return Tile(self.group, tile_id=self.tile_id, pos=pos, layer=self.layer)
 
@@ -40,13 +45,13 @@ class Tile(Element):
         if self.group in self.e['Assets'].custom_tile_renderers:
             self.render_func = self.e['Assets'].custom_tile_renderers[self.group]
         self.offset = self.config['offset']
-        
+
     def export(self):
         data = {'group': self.group, 'tile_id': self.tile_id, 'pos': self.grid_pos, 'layer': self.layer}
         if len(self.custom_data):
             data['c'] = self.custom_data
         return data
-    
+
     def attach(self, tilemap, ongrid=True):
         if ongrid:
             self.raw_pos = (self.grid_pos[0] * tilemap.tile_size[0], self.grid_pos[1] * tilemap.tile_size[1])
@@ -67,6 +72,7 @@ class Tile(Element):
                 neighbors[tuple(offset[:2])] = 'edge'
         return neighbors
 
+
 class Tilemap(Element):
     def __init__(self, tile_size=(16, 16), dimensions=(16, 16)):
         super().__init__()
@@ -75,25 +81,26 @@ class Tilemap(Element):
         self.dimensions = tuple(dimensions)
         self.demensional_lock = True
         self.reset()
-        
+
     @property
     def world_dimensions(self):
         return (self.dimensions[0] * self.tile_size[0], self.dimensions[1] * self.tile_size[1])
-        
+
     def reset(self):
         self.grid_tiles = {}
         self.physics_map = {}
         self.offgrid_tiles = Quads((self.tile_size[0] + self.tile_size[1]) * 3)
         self.i = 0
-        
+
     def save(self, path):
-        output = {'tile_size': self.tile_size, 'grid_tiles': {}, 'offgrid_tiles': self.offgrid_tiles.export(lambda x: x.export()), 'dimensions': self.dimensions}
+        output = {'tile_size': self.tile_size, 'grid_tiles': {},
+                  'offgrid_tiles': self.offgrid_tiles.export(lambda x: x.export()), 'dimensions': self.dimensions}
         for loc in self.grid_tiles:
             output['grid_tiles'][loc] = {}
             for layer in self.grid_tiles[loc]:
                 output['grid_tiles'][loc][layer] = self.grid_tiles[loc][layer].export()
         write_tjson(path, output)
-        
+
     def in_map(self, gridpos):
         dimensions_r = pygame.Rect(0, 0, *self.dimensions)
         return dimensions_r.collidepoint(gridpos)
@@ -105,10 +112,11 @@ class Tilemap(Element):
                 if spawn_hook(tile.export(), True):
                     self.insert(tile, ongrid=True)
         for tile in tilemap.offgrid_tiles.objects.values():
-            tile = tile.shift_clone((tile.grid_pos[0] + offset[0] * self.tile_size[0], tile.grid_pos[1] + offset[1] * self.tile_size[1]))
+            tile = tile.shift_clone(
+                (tile.grid_pos[0] + offset[0] * self.tile_size[0], tile.grid_pos[1] + offset[1] * self.tile_size[1]))
             if spawn_hook(tile.export(), False):
                 self.insert(tile, ongrid=False)
-    
+
     def load(self, path, spawn_hook=lambda tile_data, ongrid: True):
         data = read_tjson(path)
         self.reset()
@@ -118,11 +126,15 @@ class Tilemap(Element):
             for layer in data['grid_tiles'][loc]:
                 tile_data = data['grid_tiles'][loc][layer]
                 if spawn_hook(tile_data, True):
-                    self.insert(Tile(tile_data['group'], tile_id=tuple(tile_data['tile_id']), pos=tuple(tile_data['pos']), layer=tile_data['layer'], custom_data=tile_data['c'] if 'c' in tile_data else ''))
+                    self.insert(
+                        Tile(tile_data['group'], tile_id=tuple(tile_data['tile_id']), pos=tuple(tile_data['pos']),
+                             layer=tile_data['layer'], custom_data=tile_data['c'] if 'c' in tile_data else ''))
         for tile_data in data['offgrid_tiles']['objects'].values():
             if spawn_hook(tile_data, False):
-                self.insert(Tile(tile_data['group'], tile_id=tuple(tile_data['tile_id']), pos=tuple(tile_data['pos']), layer=tile_data['layer'], custom_data=tile_data['c'] if 'c' in tile_data else ''), ongrid=False)
-    
+                self.insert(Tile(tile_data['group'], tile_id=tuple(tile_data['tile_id']), pos=tuple(tile_data['pos']),
+                                 layer=tile_data['layer'], custom_data=tile_data['c'] if 'c' in tile_data else ''),
+                            ongrid=False)
+
     def insert(self, tile, ongrid=True):
         tile.attach(self, ongrid=ongrid)
         dimensions_r = pygame.Rect(0, 0, *self.dimensions)
@@ -144,7 +156,7 @@ class Tilemap(Element):
                 return
             self.offgrid_tiles.add_raw(tile, tile.rect, tag=True)
         return True
-            
+
     def area_masks(self, rect):
         surfs = {}
         for loc in self.rect_grid_locs(rect):
@@ -157,7 +169,7 @@ class Tilemap(Element):
                     tile.primitive_render(surfs[layer], offset=rect.topleft)
         masks = {layer: pygame.mask.from_surface(surfs[layer]) for layer in surfs}
         return masks
-    
+
     # could be made faster by using offsets for each tile test instead of a whole area mask
     def optimize_area(self, rect, layer=0):
         masks = self.area_masks(rect)
@@ -225,7 +237,7 @@ class Tilemap(Element):
                             new_type = tile_type
                     if new_type:
                         tile.change_id(new_type)
-                        
+
     def floodfill(self, tile):
         check_locs = set((tile.grid_pos,))
         fill_locs = set()
@@ -251,7 +263,7 @@ class Tilemap(Element):
                     return
         for loc in fill_locs:
             self.insert(tile.shift_clone(loc))
-        
+
     # only updates physics map on all layer delete
     def grid_delete(self, grid_pos, layer=None):
         if grid_pos in self.grid_tiles:
@@ -262,16 +274,17 @@ class Tilemap(Element):
             else:
                 if layer in self.grid_tiles[grid_pos]:
                     del self.grid_tiles[grid_pos][layer]
-            
+
     def rect_delete(self, rect, layer=None):
         topleft = (rect.x // self.tile_size[0], rect.y // self.tile_size[1])
         bottomright = (rect.right // self.tile_size[0], rect.bottom // self.tile_size[1])
-        
+
         for y in range(topleft[1], bottomright[1] + 1):
             for x in range(topleft[0], bottomright[0] + 1):
                 grid_pos = (x, y)
                 if grid_pos in self.grid_tiles:
-                    tile_r = pygame.Rect(grid_pos[0] * self.tile_size[0], grid_pos[1] * self.tile_size[1], *self.tile_size)
+                    tile_r = pygame.Rect(grid_pos[0] * self.tile_size[0], grid_pos[1] * self.tile_size[1],
+                                         *self.tile_size)
                     if tile_r.colliderect(rect):
                         if layer != None:
                             if layer in self.grid_tiles[grid_pos]:
@@ -286,7 +299,7 @@ class Tilemap(Element):
                             del self.grid_tiles[grid_pos]
                             if grid_pos in self.physics_map:
                                 del self.physics_map[grid_pos]
-                        
+
         tiles = self.offgrid_tiles.query(rect)
         if layer != None:
             for tile in tiles:
@@ -297,7 +310,7 @@ class Tilemap(Element):
             for tile in tiles:
                 if tile.rect.colliderect(rect):
                     self.offgrid_tiles.delete(tile)
-                
+
     def nearby_grid_physics(self, pos):
         grid_pos = (pos[0] // self.tile_size[0], pos[1] // self.tile_size[1])
         tiles = []
@@ -306,36 +319,36 @@ class Tilemap(Element):
             if pos in self.physics_map:
                 tiles.append(self.physics_map[pos][0][2])
         return tiles
-            
+
     def gridtile(self, pos):
         if pos in self.grid_tiles:
             return self.grid_tiles[pos]
         return {}
-    
+
     def physics_ongridtile(self, pos):
         if pos in self.physics_map:
             return self.physics_map[pos][0][2]
         return None
-    
+
     def physics_gridtile(self, pos):
         grid_pos = (pos[0] // self.tile_size[0], pos[1] // self.tile_size[1])
         if grid_pos in self.physics_map:
             return self.physics_map[grid_pos][0][2]
         return None
-    
+
     def count_tiles(self):
         count = {'grid': 0, 'offgrid': len(self.offgrid_tiles.objects)}
         for loc in self.grid_tiles:
             count['grid'] += len(self.grid_tiles[loc])
         return count
-    
+
     def count_rect_tiles(self, rect):
         layers = self.rect_select(rect)
         count = 0
         for layer in layers:
             count += len(layers[layer])
         return count
-    
+
     def visible_layer_contains(self, rect, layer):
         tile_types = set()
         layers = self.rect_select(rect)
@@ -348,43 +361,47 @@ class Tilemap(Element):
         topleft = (rect.x // self.tile_size[0], rect.y // self.tile_size[1])
         bottomright = (rect.right // self.tile_size[0], rect.bottom // self.tile_size[1])
         layers = {}
-        
+
         blits = []
-        
+
         # grab grid tiles
         for y in range(topleft[1], bottomright[1] + 1):
             for x in range(topleft[0], bottomright[0] + 1):
                 tiles = self.gridtile((x, y))
                 for tile in tiles.values():
-                    blits.append((tile.img, (tile.raw_pos[0] + tile.offset[0] - offset[0], tile.raw_pos[1] + tile.offset[1] - offset[1]), tile.layer, group))
-                    
+                    blits.append((tile.img, (
+                    tile.raw_pos[0] + tile.offset[0] - offset[0], tile.raw_pos[1] + tile.offset[1] - offset[1]),
+                                  tile.layer, group))
+
         # grab off-grid tiles
         for tile in self.offgrid_tiles.query(rect):
-            blits.append((tile.img, (tile.raw_pos[0] + tile.offset[0] - offset[0], tile.raw_pos[1] + tile.offset[1] - offset[1]), tile.layer, group))
-        
+            blits.append((tile.img,
+                          (tile.raw_pos[0] + tile.offset[0] - offset[0], tile.raw_pos[1] + tile.offset[1] - offset[1]),
+                          tile.layer, group))
+
         return blits
-    
+
     def renderz(self, rect, offset=(0, 0), group='default'):
         topleft = (rect.x // self.tile_size[0], rect.y // self.tile_size[1])
         bottomright = (rect.right // self.tile_size[0], rect.bottom // self.tile_size[1])
         layers = {}
-        
+
         # grab grid tiles
         for y in range(topleft[1], bottomright[1] + 1):
             for x in range(topleft[0], bottomright[0] + 1):
                 tiles = self.gridtile((x, y))
                 for tile in tiles.values():
                     tile.render(offset=offset, group=group)
-                    
+
         # grab off-grid tiles
         for tile in self.offgrid_tiles.query(rect):
             tile.render(offset=offset, group=group)
-            
+
     def renderz_only(self, rect, offset=(0, 0), group='default', only=set()):
         topleft = (rect.x // self.tile_size[0], rect.y // self.tile_size[1])
         bottomright = (rect.right // self.tile_size[0], rect.bottom // self.tile_size[1])
         layers = {}
-        
+
         # grab grid tiles
         for y in range(topleft[1], bottomright[1] + 1):
             for x in range(topleft[0], bottomright[0] + 1):
@@ -392,12 +409,12 @@ class Tilemap(Element):
                 for tile in tiles.values():
                     if tile.group in only:
                         tile.render(offset=offset, group=group)
-                    
+
         # grab off-grid tiles
         for tile in self.offgrid_tiles.query(rect):
             if tile.group in only:
                 tile.render(offset=offset, group=group)
-    
+
     def rect_grid_locs(self, rect):
         topleft = (rect.x // self.tile_size[0], rect.y // self.tile_size[1])
         bottomright = (rect.right // self.tile_size[0], rect.bottom // self.tile_size[1])
@@ -406,12 +423,12 @@ class Tilemap(Element):
             for x in range(topleft[0], bottomright[0] + 1):
                 locs.append((x, y))
         return locs
-    
+
     def rect_select(self, rect, gridonly=False):
         topleft = (rect.x // self.tile_size[0], rect.y // self.tile_size[1])
         bottomright = (rect.right // self.tile_size[0], rect.bottom // self.tile_size[1])
         layers = {}
-        
+
         # grab grid tiles
         for y in range(topleft[1], bottomright[1] + 1):
             for x in range(topleft[0], bottomright[0] + 1):
@@ -420,12 +437,12 @@ class Tilemap(Element):
                     if k not in layers:
                         layers[k] = []
                     layers[k].append(v)
-                    
+
         # grab off-grid tiles
         if not gridonly:
             for tile in self.offgrid_tiles.query(rect):
                 if tile.layer not in layers:
                     layers[tile.layer] = []
                 layers[tile.layer].append(tile)
-            
+
         return layers

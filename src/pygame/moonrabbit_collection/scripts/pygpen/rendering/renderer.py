@@ -2,6 +2,7 @@ import pygame
 
 from ..utils.elements import ElementSingleton
 
+
 class Renderer(ElementSingleton):
     def __init__(self, groups=['default']):
         super().__init__()
@@ -10,19 +11,19 @@ class Renderer(ElementSingleton):
         self.i = 0
         self.render_count = 0
         self.reset()
-        
+
     def set_groups(self, groups):
         self.groups = groups
         self.reset()
-    
+
     def reset(self):
         for group in self.groups:
             self.render_queue[group] = []
-    
+
     def blit(self, surf, pos, z=0, group='default'):
         self.render_queue[group].append((z, self.i, surf, pos))
         self.i += 1
-    
+
     # works with anything that takes the surface as the first argument
     def renderf(self, func, *args, **kwargs):
         z = kwargs['z'] if 'z' in kwargs else 0

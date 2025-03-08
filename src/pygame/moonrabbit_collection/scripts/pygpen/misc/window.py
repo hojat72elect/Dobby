@@ -5,8 +5,10 @@ import pygame
 from ..utils.elements import ElementSingleton
 from ..mgl.mgl import MGL
 
+
 class Window(ElementSingleton):
-    def __init__(self, dimensions=(640, 480), caption='pygpen window', flags=0, fps_cap=60, dt_cap=1, opengl=False, frag_path=None):
+    def __init__(self, dimensions=(640, 480), caption='pygpen window', flags=0, fps_cap=60, dt_cap=1, opengl=False,
+                 frag_path=None):
         super().__init__()
         self.opengl = opengl
         self.frag_path = frag_path
@@ -21,15 +23,15 @@ class Window(ElementSingleton):
         self.start_time = time.time()
         self.frames = 0
         self.frame_log = []
-        
+
         pygame.init()
         pygame.display.set_caption(caption)
         self.screen = pygame.display.set_mode(self.dimensions, self.flags)
         self.clock = pygame.time.Clock()
-        
+
         self.last_frame = time.time()
         self.dt = 0.1
-        
+
         self.render_object = None
         if self.opengl:
             MGL()
@@ -41,11 +43,11 @@ class Window(ElementSingleton):
     @property
     def fps(self):
         return len(self.frame_log) / sum(self.frame_log)
-        
+
     @property
     def runtime(self):
         return self.time - self.start_time
-    
+
     def cycle(self, uniforms={}):
         if self.render_object:
             if self.render_object.default and ('surface' not in uniforms):
@@ -63,4 +65,3 @@ class Window(ElementSingleton):
         self.e['Input'].update()
         self.time = time.time()
         self.frames += 1
-        

@@ -1,16 +1,17 @@
 from . import pygpen as pp
 
+
 class NPC(pp.PhysicsEntity):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         self.acceleration[1] = 450
         self.speed = 70
         self.z = -4
-        
+
         self.quest_complete = False
         self.first_talk = True
-        
+
     def get_dialogue(self):
         if self.type == 'george':
             george_text = []
@@ -22,7 +23,7 @@ class NPC(pp.PhysicsEntity):
                     'You seem like the type to take interest in this kind of thing.']
             else:
                 george_text = ['Hello.']
-            
+
             add_map = False
             for npc in ['chungu', 'hatrick', 'luna']:
                 if (npc in self.e['Game'].talked_to) and (npc not in self.e['HUD'].maps):
@@ -46,7 +47,8 @@ class NPC(pp.PhysicsEntity):
                 elif self.type in self.e['HUD'].inventory:
                     self.quest_complete = True
                     self.e['HUD'].inventory.remove(self.type)
-                    return ['You found my trusty pickaxe! Thanks so much for your help!', 'Now I can get back to gem hunting...']
+                    return ['You found my trusty pickaxe! Thanks so much for your help!',
+                            'Now I can get back to gem hunting...']
                 else:
                     return ['Ask George if he can help find my pickaxe.']
             else:
@@ -62,7 +64,8 @@ class NPC(pp.PhysicsEntity):
                 elif self.type in self.e['HUD'].inventory:
                     self.quest_complete = True
                     self.e['HUD'].inventory.remove(self.type)
-                    return ['Oh, there it is! It\'s my hat...', 'How did it get so dirty?', 'Oh well, I guess I\'ll just have to wash it.', 'Thanks for your help!']
+                    return ['Oh, there it is! It\'s my hat...', 'How did it get so dirty?',
+                            'Oh well, I guess I\'ll just have to wash it.', 'Thanks for your help!']
                 else:
                     return ['George should be able to help with finding my hat.']
             else:
@@ -81,25 +84,29 @@ class NPC(pp.PhysicsEntity):
                 elif self.type in self.e['HUD'].inventory:
                     self.quest_complete = True
                     self.e['HUD'].inventory.remove(self.type)
-                    return ['I see you\'ve found the pocket watch.', 'Splendid!', 'It would\'ve been an awful thing to have lost forever.']
+                    return ['I see you\'ve found the pocket watch.', 'Splendid!',
+                            'It would\'ve been an awful thing to have lost forever.']
                 else:
-                    return ['The chap that lives above me, George, should be able to help find my grandfather\'s pocket watch.']
+                    return [
+                        'The chap that lives above me, George, should be able to help find my grandfather\'s pocket watch.']
             else:
                 return ['I just finished my tea break. Now I\'m enjoying this wonderful weather.']
-        
+
         return ['what']
-        
+
     def update(self, *args, **kwargs):
         super().update(*args, **kwargs)
-        
+
         self.flip[0] = self.e['Game'].player.center[0] < self.center[0]
-            
+
         self.physics_update(self.e['Game'].tilemap)
-        
+
         if (not self.e['HUD'].talking) and (not self.e['HUD'].show_maps):
             if pp.utils.game_math.distance(self.center, self.e['Game'].player.center) < 22:
                 button_img = 'x_button' if (self.e['Window'].time % 1 < 0.65) else 'x_button_2'
-                self.e['Renderer'].blit(self.e['Assets'].images['misc'][button_img], (self.center[0] - 5 - self.e['Game'].camera[0], self.pos[1] - 26 - self.e['Game'].camera[1]), z=50, group='ui')
+                self.e['Renderer'].blit(self.e['Assets'].images['misc'][button_img], (
+                self.center[0] - 5 - self.e['Game'].camera[0], self.pos[1] - 26 - self.e['Game'].camera[1]), z=50,
+                                        group='ui')
                 if self.e['Input'].pressed('interact'):
                     self.e['Input'].input['interact'].just_pressed = False
                     self.e['HUD'].talking = True

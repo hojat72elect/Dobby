@@ -3,19 +3,20 @@ import pygame
 from ..utils.elements import ElementSingleton
 from ..data_structures.entity_quads import EQuads
 
+
 class EntityGroups(ElementSingleton):
     def __init__(self, quad_size=64, quad_groups=[]):
         super().__init__()
         self.groups = {}
         self.locked = False
         self.add_queue = []
-        
+
         self.quad_groups = set(quad_groups)
         self.equads = EQuads(quad_size=quad_size)
-        
+
     def set_quad_groups(self, quad_groups=[]):
         self.quad_groups = set(quad_groups)
-        
+
     def add(self, entity, group):
         if self.locked:
             self.add_queue.append((entity, group))
@@ -27,16 +28,16 @@ class EntityGroups(ElementSingleton):
                 if group not in self.groups:
                     self.groups[group] = []
                 self.groups[group].append(entity)
-    
+
     def update(self, group=None, unlock=True, quad_rect=pygame.Rect(0, 0, 100, 100)):
         dt = self.e['Window'].dt
-        
+
         # update active entities based on quads (only applies when doing a general update)
         if len(self.quad_groups) and not group:
             self.equads.update_active(quad_rect)
             # update local group listing based on spatial partitioning
             self.groups.update(self.equads.active_entities)
-            
+
         self.locked = True
         if group:
             if group in self.groups:
@@ -56,7 +57,7 @@ class EntityGroups(ElementSingleton):
                 for addition in self.add_queue:
                     self.add(*addition)
                 self.add_queue = []
-    
+
     def render(self, surf, group=None, offset=(0, 0)):
         if group:
             if group in self.groups:
@@ -65,7 +66,7 @@ class EntityGroups(ElementSingleton):
         else:
             for group in self.groups:
                 self.render(surf, group=group, offset=offset)
-    
+
     def renderz(self, group=None, render_group='default', offset=(0, 0)):
         if group:
             if group in self.groups:

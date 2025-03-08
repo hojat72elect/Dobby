@@ -4,6 +4,7 @@ from ..utils.elements import ElementSingleton
 from ..utils.gfx import clip
 from ..assets.asset_utils import load_img_directory
 
+
 class UIBoxer(ElementSingleton):
     def __init__(self, path=None):
         super().__init__()
@@ -13,7 +14,7 @@ class UIBoxer(ElementSingleton):
         self.load()
         self.boxes = {}
         self.box_cache = {}
-            
+
     def load(self, path=None):
         if path:
             self.path = path
@@ -31,7 +32,9 @@ class UIBoxer(ElementSingleton):
         box_parts = {
             'tl_corner': clip(box_img, pygame.Rect(0, 0, corner_size, corner_size)),
             'tr_corner': clip(box_img, pygame.Rect(box_img.get_width() - corner_size, 0, corner_size, corner_size)),
-            'br_corner': clip(box_img, pygame.Rect(box_img.get_width() - corner_size, box_img.get_height() - corner_size, corner_size, corner_size)),
+            'br_corner': clip(box_img,
+                              pygame.Rect(box_img.get_width() - corner_size, box_img.get_height() - corner_size,
+                                          corner_size, corner_size)),
             'bl_corner': clip(box_img, pygame.Rect(0, box_img.get_height() - corner_size, corner_size, corner_size)),
             'top_edge': clip(box_img, pygame.Rect(corner_size, 0, *edge_size)),
             'left_edge': clip(box_img, pygame.Rect(0, corner_size, *edge_size[::-1])),
@@ -71,7 +74,8 @@ class UIBoxer(ElementSingleton):
             right_crop = clip(bd['right_edge'], pygame.Rect(0, 0, bd['corner_size'], vertical_remainder))
 
             box_surf.blit(top_crop, (size[0] - bd['corner_size'] - horizontal_remainder, 0))
-            box_surf.blit(bottom_crop, (size[0] - bd['corner_size'] - horizontal_remainder, size[1] - bd['corner_size']))
+            box_surf.blit(bottom_crop,
+                          (size[0] - bd['corner_size'] - horizontal_remainder, size[1] - bd['corner_size']))
             box_surf.blit(left_crop, (0, size[1] - bd['corner_size'] - vertical_remainder))
             box_surf.blit(right_crop, (size[0] - bd['corner_size'], size[1] - bd['corner_size'] - vertical_remainder))
 

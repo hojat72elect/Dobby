@@ -3,6 +3,7 @@ import pygame
 from ..utils.elements import Element
 from ..utils.game_math import normalize
 
+
 class Entity(Element):
     def __init__(self, type, pos, z=0):
         super().__init__()
@@ -16,44 +17,45 @@ class Entity(Element):
         self.source = 'animations' if self.action in self.animations else 'images'
         self.animation = None if self.source != 'animations' else self.animations[self.action].copy()
         self.size = self.config['size']
-        
+
         # rendering options
         self.opacity = 255
         self.scale = [1, 1]
         self.rotation = 0
         self.flip = [False, False]
         self.visible = True
-        
+
         # tracks if optimized rendering can be used
         self.tweaked = False
-        
+
     @property
     def center(self):
         return self.rect.center
-        
+
     @property
     def rect(self):
         return pygame.Rect(*self.pos, *self.size)
-        
+
     @property
     def local_offset(self):
         img_offset = self.config[self.source][self.action]['offset']
         entity_offset = self.config['offset']
         return (img_offset[0] + entity_offset[0], img_offset[1] + entity_offset[1])
-    
+
     @property
     def raw_img(self):
         if self.source == 'animations':
             return self.animation.img
         return self.assets[self.action]
-    
+
     @property
     def img(self):
         raw_img = self.raw_img
         img = raw_img
         base_dimensions = img.get_size()
         if self.scale != [1, 1]:
-            img = pygame.transform.scale(img, (int(self.scale[0] * base_dimensions[0]), int(self.scale[1] * base_dimensions[1])))
+            img = pygame.transform.scale(img, (
+            int(self.scale[0] * base_dimensions[0]), int(self.scale[1] * base_dimensions[1])))
             self.tweaked = True
         if any(self.flip):
             img = pygame.transform.flip(img, self.flip[0], self.flip[1])
@@ -65,7 +67,7 @@ class Entity(Element):
                 img = img.copy()
             img.set_alpha(self.opacity)
         return img
-    
+
     def set_action(self, action, force=False):
         if not force and (self.action == action):
             return
@@ -73,29 +75,32 @@ class Entity(Element):
         self.source = 'animations' if self.action in self.animations else 'images'
         if self.source == 'animations':
             self.animation = self.animations[self.action].copy()
-    
+
     def topleft(self, offset=(0, 0)):
         img_size = self.img.get_size()
         if (not self.tweaked) or self.config['centered']:
             center_offset = (img_size[0] // 2, img_size[1] // 2) if self.config['centered'] else (0, 0)
-            return (self.pos[0] - offset[0] + self.local_offset[0] - center_offset[0], self.pos[1] - offset[1] + self.local_offset[1] - center_offset[1])
+            return (self.pos[0] - offset[0] + self.local_offset[0] - center_offset[0],
+                    self.pos[1] - offset[1] + self.local_offset[1] - center_offset[1])
         else:
             raw_img_size = self.raw_img.get_size()
             size_diff = (img_size[0] - raw_img_size[0], img_size[1] - raw_img_size[1])
             dynamic_offset = [-size_diff[0] // 2, -size_diff[1] // 2]
-            return (self.pos[0] - offset[0] + self.local_offset[0] + dynamic_offset[0], self.pos[1] - offset[1] + self.local_offset[1] + dynamic_offset[1])
-    
+            return (self.pos[0] - offset[0] + self.local_offset[0] + dynamic_offset[0],
+                    self.pos[1] - offset[1] + self.local_offset[1] + dynamic_offset[1])
+
     def update(self, dt):
         if self.source == 'animations':
             self.animation.update(dt)
-    
+
     def render(self, surf, offset=(0, 0)):
         if self.visible:
             surf.blit(self.img, self.topleft(offset))
-    
+
     def renderz(self, offset=(0, 0), group='default'):
         if self.visible:
             self.e['Renderer'].blit(self.img, self.topleft(offset), z=self.z, group=group)
+
 
 class PhysicsEntity(Entity):
     def __init__(self, type, pos, z=0):
@@ -113,16 +118,16 @@ class PhysicsEntity(Entity):
         self.collide_directions = {'up': False, 'down': False, 'right': False, 'left': False}
         self.dropthrough = 0
         self.setup()
-        
+
     @property
     def bounce2d(self):
         if type(self.bounce) not in {list, tuple}:
             return (self.bounce, self.bounce)
         return tuple(self.bounce)
-        
+
     def setup(self):
         pass
-        
+
     def physics_processor(self, movement, tiles):
         self.collide_directions = {'up': False, 'down': False, 'right': False, 'left': False}
         rect = self.rect
@@ -168,17 +173,17 @@ class PhysicsEntity(Entity):
                                 rect.bottom = tile.rect.top
                                 self.velocity[1] *= -self.bounce2d[1]
                                 self.collide_directions['down'] = True
-                    
+
                 if rect.x != self.rect.x:
                     self.pos[0] = rect.x
                 if rect.y != self.rect.y:
                     self.pos[1] = rect.y
                 rect = self.rect
                 self.last_collisions.append(tile)
-                
+
     def custom_update(self):
         pass
-                
+
     def physics_update(self, tilemap):
         dt = self.e['Window'].dt
         self.custom_update()
@@ -198,11 +203,11 @@ class PhysicsEntity(Entity):
         self.velocity[1] = max(-self.velocity_caps[1], min(self.velocity_caps[1], self.velocity[1]))
         self.next_movement = [0, 0]
         self.dropthrough = max(0, self.dropthrough - dt)
-        
+
     def apply_force(self, vec):
         self.next_movement[0] += vec[0] * self.e['Window'].dt
         self.next_movement[1] += vec[1] * self.e['Window'].dt
-    
+
     def physics_move(self, movement, tilemap):
         self.last_collisions = []
         self.last_pos = tuple(self.pos)

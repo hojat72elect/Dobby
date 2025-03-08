@@ -51,6 +51,7 @@ void main() {
 }
 '''
 
+
 class WaterManager(ElementSingleton):
     def __init__(self, spread=0.5, springiness=0.015, dampening=0.065, hz=60):
         super().__init__()
@@ -76,9 +77,10 @@ class WaterManager(ElementSingleton):
                 tile._water = Water(tile.rect, spacing=spacing, colors=(water_color, foam_color))
             tile.e['WaterManager'].queue(tile._water)
             tile.e['Renderer'].renderf(tile._water.render, (offset[0], offset[1]), group=group, z=tile.layer)
+
         funcs = {tile_group: water_render}
-        return funcs            
-    
+        return funcs
+
     def clear(self):
         self.compute_buffer = []
 
@@ -92,7 +94,7 @@ class WaterManager(ElementSingleton):
     def queue(self, water):
         if self.cs_prog:
             self.compute_buffer.append(water)
-    
+
     def compute(self, waters=[], restricted=False):
         if self.cs_prog:
             updates = 1
@@ -124,6 +126,7 @@ class WaterManager(ElementSingleton):
                         x += len(water.points)
             self.clear()
 
+
 class Water:
     def __init__(self, rect, spacing=4, colors=((0, 0, 255), (255, 255, 255))):
         self.spacing = spacing
@@ -136,7 +139,7 @@ class Water:
         self.points[0] = 9999999
         self.points[-1] = 9999999
         self.velocities = self.points.copy()
-        
+
     def surface_level(self, world_pos):
         if (world_pos >= self.pos[0]) and (world_pos <= self.pos[0] + self.size[0]):
             index = max(0, min(self.pwidth - 1, int((world_pos - self.pos[0]) / self.spacing))) + 1
@@ -147,7 +150,7 @@ class Water:
     def qsurface_level(self, world_pos):
         index = max(0, min(self.pwidth - 1, int((world_pos - self.pos[0]) / self.spacing))) + 1
         return self.points[index] + self.pos[1]
-    
+
     def impact(self, world_pos, amount, width=1):
         if (world_pos >= self.pos[0]) and (world_pos <= self.pos[0] + self.size[0]):
             index = max(0, min(self.pwidth - 1, int((world_pos - self.pos[0]) / self.spacing))) + 1
@@ -166,12 +169,14 @@ class Water:
                 self.impact(p2[0], -amount, width=width)
                 return True
         return False
-    
+
     def render(self, surf, offset=(0, 0)):
-        surface_points = [(0, 0)] + [((i + 1) * self.spacing, self.points[i + 1]) for i in range(self.pwidth)] + [(self.size[0], 0)]
+        surface_points = [(0, 0)] + [((i + 1) * self.spacing, self.points[i + 1]) for i in range(self.pwidth)] + [
+            (self.size[0], 0)]
         surface_points[0] = (0, self.points[1])
         surface_points[-1] = (self.size[0], self.points[-2])
         render_points = [(p[0] + self.pos[0] - offset[0], p[1] + self.pos[1] - offset[1]) for p in surface_points]
-        render_points_box = [(self.pos[0] - offset[0], self.pos[1] - offset[1] + self.size[1])] + render_points + [(self.pos[0] - offset[0] + self.size[0], self.pos[1] - offset[1] + self.size[1])]
+        render_points_box = [(self.pos[0] - offset[0], self.pos[1] - offset[1] + self.size[1])] + render_points + [
+            (self.pos[0] - offset[0] + self.size[0], self.pos[1] - offset[1] + self.size[1])]
         pygame.draw.polygon(surf, self.colors[0], render_points_box)
         pygame.draw.lines(surf, self.colors[1], False, render_points, 1)

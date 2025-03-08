@@ -9,9 +9,10 @@ class ElementSingleton:
 
     def update(self):
         pass
-    
+
     def delete(self):
         self.e.delete_elem(self)
+
 
 class Element:
     _dynamic_component = True
@@ -23,22 +24,23 @@ class Element:
         self._singleton = singleton
         if self.register:
             self.e.register_elem(self)
-    
+
     def update(self):
         pass
-    
+
     def delete(self):
         self.e.delete_elem(self)
+
 
 class Elements:
     def __init__(self):
         self.elems = {'duplicates': {}, 'singletons': {}}
-        
+
     def delete_elem(self, elem):
         if not elem._singleton:
             if elem._name in self.elems['duplicates']:
                 self.elems['duplicates'][elem._name].remove(elem)
-    
+
     def register_elem(self, elem):
         if elem._singleton:
             self.elems['singletons'][elem._name] = elem
@@ -46,14 +48,15 @@ class Elements:
             self.elems['duplicates'][elem._name] = [elem]
         else:
             self.elems['duplicates'][elem._name].append(elem)
-        
+
     # no error handling here to save on performance
     def __getitem__(self, key):
         return self.elems['singletons'][key]
-    
+
     def group(self, key):
         if key in self.elems['duplicates']:
             return self.elems['duplicates'][key]
         return []
+
 
 elems = Elements()

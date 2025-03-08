@@ -8,7 +8,7 @@ class Quads:
         self.map = {}
         self.id_to_loc = {}
         self.next_id = 0
-        
+
     def export(self, obj_handler=lambda x: None):
         output = {
             'objects': {k: obj_handler(v) for k, v in self.objects.items()},
@@ -43,7 +43,7 @@ class Quads:
         for loc in quad_locs:
             self.add(obj, loc, tag=tag, id_jump=0)
         self.next_id += 1
-    
+
     def delete(self, obj):
         # assumes object is tagged
         for quad_id in obj.quad_ids:
@@ -51,7 +51,7 @@ class Quads:
                 del self.objects[quad_id]
             try:
                 for loc in self.id_to_loc[quad_id]:
-                     if loc in self.map:
+                    if loc in self.map:
                         if quad_id in self.map[loc]:
                             self.map[loc].remove(quad_id)
             except KeyError:

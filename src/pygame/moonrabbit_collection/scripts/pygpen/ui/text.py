@@ -6,6 +6,7 @@ from ..utils.elements import ElementSingleton, Element
 from ..utils.gfx import palette_swap, clip
 from ..utils.io import recursive_file_op
 
+
 def load_font_img(path, font_color=(255, 255, 255)):
     fg_color = (255, 0, 0)
     bg_color = (0, 0, 0)
@@ -24,21 +25,23 @@ def load_font_img(path, font_color=(255, 255, 255)):
         letter.set_colorkey(bg_color)
     return letters, letter_spacing, font_img.get_height()
 
+
 class Text(ElementSingleton):
     def __init__(self, path=None):
         super().__init__()
         self.path = path
         self.fonts = {}
         self.load()
-        
+
     def load(self, path=None):
         if path:
             self.path = path
         if self.path:
             self.fonts = recursive_file_op(self.path, Font, filetype='png')
-        
+
     def __getitem__(self, key):
         return self.fonts[key]
+
 
 class PreppedText:
     def __init__(self, text, size, font):
@@ -58,18 +61,23 @@ class PreppedText:
     def __str__(self):
         return ('<PreppedText:' + str(self.width) + 'x' + str(self.height) + '> ' + self.text).replace('\n', '\\n')
 
+
 class Font(Element):
     def __init__(self, path, color=(255, 255, 255)):
         super().__init__()
         self.base_color = color
         self.letters, self.letter_spacing, self.line_height = load_font_img(path, color)
         self.color_cache = {color: self.letters}
-        self.font_order = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','.','-',',',':','+','\'','!','?','0','1','2','3','4','5','6','7','8','9','(',')','/','_','=','\\','[',']','*','"','<','>',';']
+        self.font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+                           'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                           'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '.', '-',
+                           ',', ':', '+', '\'', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')',
+                           '/', '_', '=', '\\', '[', ']', '*', '"', '<', '>', ';']
         self.font_map = {k: i for i, k in enumerate(self.font_order)}
         self.space_width = self.letter_spacing[0]
         self.base_spacing = 1
         self.line_spacing = 2
-        
+
     def prep_color(self, color):
         new_letters = []
         for img in self.letters:
@@ -125,10 +133,12 @@ class Font(Element):
                     processed_text += word[0]
                 max_width = max(max_width, x)
 
-        return PreppedText(processed_text, (max_width, self.line_height + (self.line_height + self.line_spacing) * y), self)
-    
+        return PreppedText(processed_text, (max_width, self.line_height + (self.line_height + self.line_spacing) * y),
+                           self)
+
     def renderz(self, text, loc, line_width=0, color=None, offset=(0, 0), group='default', z=0):
-        self.render(self.e['Renderer'], text, (loc[0] - offset[0], loc[1] - offset[1]), line_width=line_width, color=color, blit_kwargs={'group': group, 'z': z})
+        self.render(self.e['Renderer'], text, (loc[0] - offset[0], loc[1] - offset[1]), line_width=line_width,
+                    color=color, blit_kwargs={'group': group, 'z': z})
 
     def render(self, surf, text, loc, line_width=0, color=None, blit_kwargs={}):
         if not color:

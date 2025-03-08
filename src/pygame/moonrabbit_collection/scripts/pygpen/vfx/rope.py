@@ -6,6 +6,7 @@ import pygame
 from ..utils.game_math import distance
 from ..utils.elements import Element
 
+
 class Rope(Element):
     def __init__(self, points, color=(255, 255, 255), hz=60):
         super().__init__()
@@ -20,34 +21,36 @@ class Rope(Element):
         for i in range(len(self.points) - 1):
             dis = distance(self.points[i], self.points[i + 1])
             self.connections.append([i, i + 1, dis])
-            
+
     @property
     def natural_length(self):
         return sum([conn[2] for conn in self.connections])
-    
+
     @property
     def length(self):
         return sum([conn[2] * self.stretch for conn in self.connections])
-            
+
     def point_info(self, index):
         if index < 0:
             index = len(self.points) + index
         if index < len(self.points):
             parent = index - 1
             if parent != -1:
-                angle = math.atan2(self.points[parent][1] - self.points[index][1], self.points[parent][0] - self.points[index][0])
+                angle = math.atan2(self.points[parent][1] - self.points[index][1],
+                                   self.points[parent][0] - self.points[index][0])
             else:
-                angle = math.atan2(self.points[index + 1][1] - self.points[index][1], self.points[index + 1][0] - self.points[index][0]) + math.pi
+                angle = math.atan2(self.points[index + 1][1] - self.points[index][1],
+                                   self.points[index + 1][0] - self.points[index][0]) + math.pi
             return (self.points[index][:2], angle)
         return None
-            
+
     def shift_handles(self, amount, handles=None):
         if not handles:
             handles = range(len(self.handles))
         for handle in handles:
             self.points[self.handles[handle]][0] += amount[0]
             self.points[self.handles[handle]][1] += amount[1]
-            
+
     def place_handles(self, pos, handles=None, reduce_pull=0):
         if not handles:
             handles = range(len(self.handles))
@@ -55,7 +58,8 @@ class Rope(Element):
         handle_ids = []
         for handle in handles:
             if not pull_dis:
-                pull_dis = (pos[0] - self.points[self.handles[handle]][0], pos[1] - self.points[self.handles[handle]][1])
+                pull_dis = (
+                pos[0] - self.points[self.handles[handle]][0], pos[1] - self.points[self.handles[handle]][1])
             self.points[self.handles[handle]][0] = pos[0]
             self.points[self.handles[handle]][1] = pos[1]
             handle_ids.append(self.handles[handle])
@@ -66,7 +70,7 @@ class Rope(Element):
                     point[1] += pull_dis[1] * reduce_pull
                     self.last_points[i][0] += pull_dis[0] * reduce_pull
                     self.last_points[i][1] += pull_dis[1] * reduce_pull
-            
+
     def update_constraints(self):
         for conn in self.connections:
             dis = distance(self.points[conn[0]], self.points[conn[1]])
@@ -82,20 +86,20 @@ class Rope(Element):
             if self.points[conn[1]][2]:
                 self.points[conn[1]][0] += dx * movement_ratio * 0.95
                 self.points[conn[1]][1] += dy * movement_ratio * 0.95
-                
+
     def impulse(self, index, force):
         self.last_points[index][0] -= force[0]
         self.last_points[index][1] -= force[1]
-        
+
     def toggle_handle(self, index, enabled=True):
         if enabled and (index not in self.handles):
             self.handles.append(index)
             self.points[index][2] = 0
-            
+
         if (not enabled) and (index in self.handles):
             self.handles.remove(index)
             self.points[index][2] = 1
-        
+
     def update(self, forces=[0, 0.2], restricted=False):
         updates = 1
         if restricted:
@@ -111,9 +115,9 @@ class Rope(Element):
                 if point[2]:
                     point[0] += vel[0] + forces[0]
                     point[1] += vel[1] + forces[1]
-            
+
             self.update_constraints()
-    
+
     def render(self, surf, offset=(0, 0), show_points=False):
         points = [(p[0] - offset[0], p[1] - offset[1]) for p in self.points]
         pygame.draw.lines(surf, self.color, False, points)
