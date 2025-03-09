@@ -11,6 +11,10 @@ from scripts.player import Player
 from scripts.spawn_hook import gen_hook
 
 class Game(pp.PygpenGame):
+    """
+    Warning: do not rename this class.
+    """
+
     def load(self):
         pp.init(
             (960, 630),
@@ -129,6 +133,3 @@ class Game(pp.PygpenGame):
         self.e['Window'].cycle({'surface': self.display, 'ui_surf': self.ui_surf, 'noise_tex': self.noise_tex,
                                 'time': int((self.e['Window'].time - self.e['Window'].start_time) * 100),
                                 'camera': tuple(list(self.camera))})
-
-if __name__ == '__main__':
-    Game().run()
