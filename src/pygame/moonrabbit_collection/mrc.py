@@ -2,17 +2,13 @@ import math
 import random
 import sys
 import time
-
 import pygame
-from pygame.locals import *
 
 import scripts.pygpen as pp
-
 import scripts.particles
 from scripts.hud import HUD
 from scripts.player import Player
 from scripts.spawn_hook import gen_hook
-
 
 class Game(pp.PygpenGame):
     def load(self):
